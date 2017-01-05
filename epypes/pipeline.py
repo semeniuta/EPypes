@@ -40,7 +40,8 @@ class Node(GenericObject):
 
         if token is None:
             res = self._func(**self._kvargs)
-        res = self._func(token, **self._kvargs)
+        else:
+            res = self._func(token, **self._kvargs)
 
         t1 = time.time()
         self._time = t1 - t0
@@ -93,8 +94,8 @@ class SimplePipeline(Node):
     def nodes(self):
         return self._nodes
 
-    def run(self, token=None):
-        return Node.run(self, token)
+    #def run(self, token=None):
+    #    return Node.run(self, token)
 
     def out(self, node_name):
         return self._outputs[node_name]

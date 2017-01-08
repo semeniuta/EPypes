@@ -1,13 +1,9 @@
-
-
-import multiprocessing as mp
-from multiprocessing import Queue
 from datetime import datetime
-import math
 
-from epypes.pipeline import Node, SimplePipeline, SourcePipeline, SinkPipeline, Pipeline, make_pipeline
-from epypes.patterns import ParallelPipesNode
-from epypes.vision import CameraGrabNode
+from epypes.patterns.parallel import ParallelPipesNode
+from epypes.patterns.vision import CameraGrabNode
+from epypes.pipeline import SimplePipeline, SinkPipeline, make_pipeline
+from epypes.node import Node
 
 if __name__ == '__main__':
 

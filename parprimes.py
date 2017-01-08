@@ -1,5 +1,5 @@
+from epypes.patterns.wpool import ProcessWorkersPoolNode
 from epypes.pipeline import Node
-from epypes.patterns import ProcessWorkersPoolNode2 as ProcessWorkersPoolNode
 
 if __name__ == '__main__':
 

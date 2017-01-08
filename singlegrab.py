@@ -1,12 +1,14 @@
 # py27 with simplecv
 from __future__ import print_function
+
 import sys
+
 sys.path.append('../VisionLab')
 from avtgrab import AVTImageGrabber
 
 import time
 
-from epypes.vision import CameraGrabNode
+from epypes.patterns.vision import CameraGrabNode
 from epypes.pipeline import SimplePipeline, make_pipeline
 
 if __name__ == '__main__':

@@ -59,6 +59,10 @@ class SimplePipeline(Node):
     def nodes(self):
         return self._nodes
 
+    @property
+    def node_times(self):
+        return [nd.time for nd in self.nodes]
+
     def out(self, node_name):
         return self._outputs[node_name]
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from epypes.patterns.parallel import ParallelPipesNode
+from epypes.patterns.parallel import create_ppnode_from_nodes, copy_input_splitter
 from epypes.patterns.vision import CameraGrabNode
 from epypes.pipeline import SimplePipeline, SinkPipeline, make_pipeline
 from epypes.node import Node
@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     cam1 = CameraGrabNode(DummyCam, 0)
     cam2 = CameraGrabNode(DummyCam, 1)
-    sg = ParallelPipesNode('MyStereoGrabber', [cam1, cam2])
+    sg = create_ppnode_from_nodes('MyStereoGrabber', [cam1, cam2], copy_input_splitter)
 
     spipe = SimplePipeline('StereoGrabPipe', [sg])
     pipe, qin, qout = make_pipeline(spipe)

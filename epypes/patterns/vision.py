@@ -1,5 +1,5 @@
 
-from epypes.pipeline import Node, SimplePipeline, SourcePipeline, SinkPipeline, Pipeline, make_pipeline
+from epypes.node import Node
 
 class CameraGrabNode(Node):
 

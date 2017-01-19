@@ -13,24 +13,6 @@ def create_ppnode_from_func(f, input_splitter, num=mp.cpu_count()):
 
     return ppnode
 
-def copy_input_splitter(token, n_parallel):
-    return tuple((token for i in range(n_parallel)))
-
-def elementwise_input_splitter(token, n_parallel):
-
-    sz_rest = n_parallel - len(token) #should be >= 0
-
-    if sz_rest < 0:
-        raise Exception('Number of elements in the token is greater than the number of parallel tasks')
-
-    return tuple(token) + tuple(None for i in range(sz_rest))
-
-def equal_input_splitter(token, n_parallel):
-    if len(token) <= n_parallel:
-        return elementwise_input_splitter(token, n_parallel)
-
-    pass # TODO
-
 def create_ppnode_from_nodes(name, nodes, input_splitter):
     '''
     Creates a ParallelPipesNode from a list nodes intended
@@ -91,6 +73,8 @@ class ParallelPipesNode(Node):
 
         Node.__init__(self, name, node_func)
 
+    def traverse_time(self):
+        return (self.name, self.time, tuple(ppipe.traverse_time() for ppipe in self.par_pipelines))
 
     @property
     def par_pipelines(self):
@@ -100,7 +84,7 @@ class ParallelPipesNode(Node):
         for pipe in self._par_pipes:
             pipe.request_stop()
 
-class ParallelPipesNodeSim(Node):
+class ParallelPipesNodeSim(ParallelPipesNode):
     '''
     A serial simulator of the ParallelPipesNode class.
     Everything runs serially in a single process

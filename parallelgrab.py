@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from epypes.patterns.parallel import create_ppnode_from_nodes, copy_input_splitter
+from epypes.patterns.parallel import create_ppnode_from_nodes
+from epypes.splitters import copy_input_splitter
 from epypes.patterns.vision import CameraGrabNode
 from epypes.pipeline import SimplePipeline, SinkPipeline, make_pipeline
 from epypes.node import Node

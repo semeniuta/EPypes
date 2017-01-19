@@ -38,6 +38,9 @@ class Node(GenericObject):
             raise Exception(msg)
         return self._time
 
+    def traverse_time(self):
+        return (self.name, self.time)
+
     def request_stop(self):
         pass
 

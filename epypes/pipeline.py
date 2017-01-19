@@ -46,7 +46,7 @@ class SimplePipeline(Node):
 
     def _get_master_func(self):
         def mf(token=None):
-            for i, node in enumerate(self._nodes):
+            for node in self.nodes:
                 token = node.run(token)
                 self._store_token(node.name, token)
             return token
@@ -54,6 +54,9 @@ class SimplePipeline(Node):
 
     def _store_token(self, node_name, token):
         self._outputs[node_name] = token
+
+    def traverse_time(self):
+        return (self.name, self.time, tuple(nd.traverse_time() for nd in self.nodes))
 
     @property
     def nodes(self):

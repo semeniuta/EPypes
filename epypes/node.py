@@ -10,6 +10,7 @@ class Node(GenericObject):
         self._func = func
         self._kvargs = kvargs
         self._time = None
+        self._exception = None
 
     def modify_argument(self, key, new_value):
 
@@ -19,16 +20,24 @@ class Node(GenericObject):
         self._kvargs[key] = new_value
 
     def run(self, token=None):
-        t0 = time.time()
 
+        try:
+            t0 = time.time()
+            res = self._call_main_func(token)
+            t1 = time.time()
+            self._time = t1 - t0
+        except Exception as e:
+            self._exception = (self.name, e)
+            self._time = None
+            res = e
+
+        return res
+
+    def _call_main_func(self, token=None):
         if token is None:
             res = self._func(**self._kvargs)
         else:
             res = self._func(token, **self._kvargs)
-
-        t1 = time.time()
-        self._time = t1 - t0
-
         return res
 
     @property

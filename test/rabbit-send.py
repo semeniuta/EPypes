@@ -10,4 +10,7 @@
 from epypes.patterns.rabbit import RabbitMQPutQueue
 
 q = RabbitMQPutQueue(host='localhost', exchange='', routing_key='hello')
-q.put('My name is Alex')
+
+
+for i in range(100):
+    q.put('Message #{}'.format(i))

@@ -1,5 +1,5 @@
 '''
-Implementaion of basic pipeline entities and related functions
+Implementation of pipeline classes and related functions
 '''
 
 from __future__ import print_function
@@ -26,13 +26,60 @@ def run_and_put_to_q(pipeline_object, token, q):
     res = SimplePipeline.run(pipeline_object, token)
     q.put(res)
 
+def is_exception(token):
+    return issubclass(type(token), Exception)
+
 class SimplePipeline(Node):
 
     def __init__(self, name, nodes):
         master_function = self._get_master_func()
         Node.__init__(self, name, master_function)
-        self._nodes = list(nodes)
+        self._add_nodes(nodes)
         self._outputs = {node.name: None for node in self._nodes}
+        self._exception = None
+
+    def _add_nodes(self, nodes):
+
+        self._nodes = []
+        self._node_indices = dict()
+        for i, nd in enumerate(nodes):
+            if nd.name in self._node_indices:
+                raise Exception('Duplicate node name found: "{0}"'.format(nd.name))
+            self._nodes.append(nd)
+            self._node_indices[nd.name] = i
+
+    def handle_exception(self, exception, node):
+        pass
+
+    def _get_master_func(self):
+
+        def mf(token=None):
+
+            exception_occured = False
+            exception_node = None
+
+            for node in self.nodes:
+                token = node.run(token)
+                if is_exception(token):
+                    exception_occured = True
+                    exception_node = node
+                    break
+                else:
+                    self._store_token(node.name, token)
+
+            if exception_occured:
+                self.handle_exception(token, exception_node)
+                return None
+
+            return token
+
+        return mf
+
+    def _store_token(self, node_name, token):
+        self._outputs[node_name] = token
+
+    def traverse_time(self):
+        return (self.name, self.time, tuple(nd.traverse_time() for nd in self.nodes))
 
     def __repr__(self):
         r = Node.__repr__(self)
@@ -44,19 +91,8 @@ class SimplePipeline(Node):
 
         return '{0}: {1}'.format(r, nodes_str)
 
-    def _get_master_func(self):
-        def mf(token=None):
-            for node in self.nodes:
-                token = node.run(token)
-                self._store_token(node.name, token)
-            return token
-        return mf
-
-    def _store_token(self, node_name, token):
-        self._outputs[node_name] = token
-
-    def traverse_time(self):
-        return (self.name, self.time, tuple(nd.traverse_time() for nd in self.nodes))
+    def get_node_index(self, node_name):
+        pass
 
     @property
     def nodes(self):

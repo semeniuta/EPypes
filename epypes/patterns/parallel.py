@@ -1,4 +1,4 @@
-from epypes.pipeline import SimplePipeline, SourcePipeline, SinkPipeline, Pipeline, make_pipeline
+from epypes.pipeline import Pipeline, SourcePipeline, SinkPipeline, FullPipeline, make_pipeline
 from epypes.node import Node
 
 import multiprocessing as mp
@@ -26,7 +26,7 @@ def create_ppnode_from_nodes(name, nodes, input_splitter):
     s_pipelines = []
     for nd in nodes:
         pname = '{}_Pipeline'.format(nd.name)
-        pipe = SimplePipeline(pname, [nd])
+        pipe = Pipeline(pname, [nd])
         s_pipelines.append(pipe)
 
     return ParallelPipesNode(name, s_pipelines, input_splitter)

@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 from epypes.node import Node
-from epypes.pipeline import SimplePipeline, SinkPipeline, make_pipeline
+from epypes.pipeline import Pipeline, SinkPipeline, make_pipeline
 
 if __name__ == '__main__':
 
@@ -15,7 +15,7 @@ if __name__ == '__main__':
     g = Node('Greeter', say_hello, exclamation=False)
     p = Node('Capitalizer', lambda x: x.upper())
 
-    spipe = SimplePipeline('MyPipe', [g, p])
+    spipe = Pipeline('MyPipe', [g, p])
     pipe, qin, qout = make_pipeline(spipe)
 
     print_node = Node('Printer', lambda x: print(x))

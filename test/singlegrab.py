@@ -9,13 +9,13 @@ from avtgrab import AVTImageGrabber
 import time
 
 from epypes.patterns.vision import CameraGrabNode
-from epypes.pipeline import SimplePipeline, make_pipeline
+from epypes.pipeline import Pipeline, make_pipeline
 
 if __name__ == '__main__':
 
     cam = CameraGrabNode(AVTImageGrabber, 0)
 
-    pipe, qin, qout = make_pipeline(SimplePipeline('GrabPipe', [cam]))
+    pipe, qin, qout = make_pipeline(Pipeline('GrabPipe', [cam]))
     pipe.listen()
 
     for i in range(1000):

@@ -1,7 +1,7 @@
 import time
 import threading
 import multiprocessing as mp
-from epypes.pipeline import Node, SimplePipeline, SinkPipeline, make_pipeline
+from epypes.pipeline import Node, Pipeline, SinkPipeline, make_pipeline
 
 def say_hello(to_whom, exclamation=False):
     s = 'Hello ' + to_whom
@@ -13,7 +13,7 @@ def test():
     g = Node('Greeter', say_hello, exclamation=False)
     p = Node('Capitalizer', lambda x: x.upper())
 
-    spipe = SimplePipeline('MyPipe', [g, p])
+    spipe = Pipeline('MyPipe', [g, p])
     pipe, qin, qout = make_pipeline(spipe)
 
     print_node = Node('Printer', lambda x: print(x))

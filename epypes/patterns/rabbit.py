@@ -60,7 +60,7 @@ class RabbitMQEventLoop(object):
 
 if __name__ == '__main__':
 
-    from epypes.pipeline import Node
+    from epypes.node import Node
 
     pn = Node('Printer', print)
 

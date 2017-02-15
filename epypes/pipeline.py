@@ -18,18 +18,18 @@ def make_pipeline(simple_pipeline, queues=()):
 
     name = simple_pipeline.name
     nodes = simple_pipeline.nodes
-    pipe = Pipeline(name, nodes, qin, qout)
+    pipe = FullPipeline(name, nodes, qin, qout)
 
     return pipe, qin, qout
 
 def run_and_put_to_q(pipeline_object, token, q):
-    res = SimplePipeline.run(pipeline_object, token)
+    res = Pipeline.run(pipeline_object, token)
     q.put(res)
 
 def is_exception(token):
     return issubclass(type(token), Exception)
 
-class SimplePipeline(Node):
+class Pipeline(Node):
 
     def __init__(self, name, nodes):
         master_function = self._get_master_func()
@@ -49,7 +49,7 @@ class SimplePipeline(Node):
             self._node_indices[nd.name] = i
 
     def handle_exception(self, exception, node):
-        pass
+        raise exception
 
     def _get_master_func(self):
 
@@ -109,18 +109,18 @@ class SimplePipeline(Node):
         for node in self._nodes:
             node.request_stop()
 
-class SourcePipeline(SimplePipeline):
+class SourcePipeline(Pipeline):
     def __init__(self, name, nodes, q_out):
-        SimplePipeline.__init__(self, name, nodes)
+        Pipeline.__init__(self, name, nodes)
         self._qout = q_out
 
     def run(self, token):
         run_and_put_to_q(self, token, self._qout)
 
 
-class SinkPipeline(SimplePipeline):
+class SinkPipeline(Pipeline):
     def __init__(self, name, nodes, q_in):
-        SimplePipeline.__init__(self, name, nodes)
+        Pipeline.__init__(self, name, nodes)
 
         self._qin = q_in
         self._loop = EventLoop(q_in, self)
@@ -129,10 +129,10 @@ class SinkPipeline(SimplePipeline):
         self._loop.start()
 
     def request_stop(self):
-        SimplePipeline.request_stop(self)
+        Pipeline.request_stop(self)
         self._loop.request_stop()
 
-class Pipeline(SinkPipeline):
+class FullPipeline(SinkPipeline):
 
     def __init__(self, name, nodes, q_in, q_out):
         SinkPipeline.__init__(self, name, nodes, q_in)

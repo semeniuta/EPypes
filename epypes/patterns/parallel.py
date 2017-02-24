@@ -1,12 +1,14 @@
-from epypes.pipeline import Pipeline, SourcePipeline, SinkPipeline, FullPipeline, make_pipeline
+from epypes.pipeline import Pipeline, SourcePipeline, SinkPipeline, FullPipeline
 from epypes.node import Node
+from epypes.payload import split_payload_and_build_tokens
+from epypes.util import make_full_pipeline
 
 import multiprocessing as mp
 
 def create_ppnode_from_func(f, input_splitter, num=mp.cpu_count()):
 
     fname = f.__name__
-    par_nodes = [Node('{0}_{1}Node'.format(fname, i)) for i in range(num)]
+    par_nodes = [Node('{0}_{1}Node'.format(fname, i), f) for i in range(num)]
 
     name ='{0}_PPNode'.format(fname)
     ppnode = create_ppnode_from_nodes(name, par_nodes, input_splitter)
@@ -40,9 +42,9 @@ class ParallelPipesNode(Node):
     in accordance with the logic in the supplied input_splitter function
     '''
 
-    def __init__(self, name, simple_pipelines, input_splitter):
+    def __init__(self, name, pipelines, input_splitter, payload_index=None):
 
-        self._n_parallel =len(simple_pipelines)
+        self._n_parallel =len(pipelines)
         self._indices = range(self._n_parallel)
 
         self._input_queues = [mp.Queue() for i in self._indices]
@@ -50,18 +52,20 @@ class ParallelPipesNode(Node):
 
         self._input_splitter = input_splitter
 
+        self._payload_index =payload_index
+
         self._par_pipes = []
         for i in self._indices:
 
             qin = self._input_queues[i]
-            pipe, _, _ = make_pipeline(simple_pipelines[i], (qin, self._qout))
+            pipe, _, _ = make_full_pipeline(pipelines[i], (qin, self._qout))
 
             self._par_pipes.append(pipe)
             pipe.listen()
 
-        def node_func(event_token=None):
+        def node_func(token=None):
 
-            token_parts = self._input_splitter(event_token, self._n_parallel)
+            token_parts = split_payload_and_build_tokens(token, self._input_splitter, self._n_parallel, self._payload_index)
 
             for i, tk in enumerate(token_parts):
                 self._input_queues[i].put(tk)
@@ -74,7 +78,8 @@ class ParallelPipesNode(Node):
         Node.__init__(self, name, node_func)
 
     def traverse_time(self):
-        return (self.name, self.time, tuple(ppipe.traverse_time() for ppipe in self.par_pipelines))
+        inner = tuple(ppipe.traverse_time() for ppipe in self.par_pipelines)
+        return self.name, self.time, inner
 
     @property
     def par_pipelines(self):
@@ -91,16 +96,17 @@ class ParallelPipesNodeSim(ParallelPipesNode):
     while the API is retained
     '''
 
-    def __init__(self, name, simple_pipelines, input_splitter):
+    def __init__(self, name, pipelines, input_splitter, payload_index=None):
 
-        self._n_parallel =len(simple_pipelines)
+        self._n_parallel =len(pipelines)
         self._indices = range(self._n_parallel)
         self._input_splitter = input_splitter
-        self._par_pipes = simple_pipelines
+        self._payload_index = payload_index
+        self._par_pipes = pipelines
 
-        def node_func(event_token=None):
+        def node_func(token=None):
 
-            token_parts = self._input_splitter(event_token, self._n_parallel)
+            token_parts = split_payload_and_build_tokens(token, self._input_splitter, self._n_parallel, self._payload_index)
 
             res = ((i, self._par_pipes[i].run(token_parts[i])) for i in self._indices)
 

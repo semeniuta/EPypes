@@ -6,23 +6,8 @@ from __future__ import print_function
 
 from epypes.node import Node
 from epypes.loop import EventLoop
-from epypes.service import PipelineService
 
-import multiprocessing as mp
 import time
-
-def make_pipeline(simple_pipeline, queues=()):
-    if queues == ():
-        qin = mp.Queue()
-        qout = mp.Queue()
-    else:
-        qin, qout = queues
-
-    name = simple_pipeline.name
-    nodes = simple_pipeline.nodes
-    pipe = FullPipeline(name, nodes, qin, qout)
-
-    return pipe, qin, qout
 
 def run_and_put_to_q(pipeline_object, token, q):
     res = Pipeline.run(pipeline_object, token)
@@ -52,7 +37,7 @@ class Pipeline(Node):
     def nodes(self):
         return self._nodes
 
-    def modify_argument(self, node_name, key, new_value):
+    def modify_node_argument(self, node_name, key, new_value):
         node = self.get_node_by_name(node_name)
         node.modify_argument(key, new_value)
 
@@ -78,7 +63,6 @@ class Pipeline(Node):
     def out(self, node_name):
         return self._outputs[node_name]
 
-    #@state_change_while_stopping
     def request_stop(self):
         self._wait_to_state_ready()
         self._stop_nodes()
@@ -141,10 +125,10 @@ class Pipeline(Node):
 
 class SourcePipeline(Pipeline):
     def __init__(self, name, nodes, q_out):
-        Pipeline.__init__(self, name, nodes)
         self._qout = q_out
+        Pipeline.__init__(self, name, nodes)
 
-    def run(self, token):
+    def run(self, token=None):
         run_and_put_to_q(self, token, self._qout)
 
 class SinkPipeline(Pipeline):
@@ -156,7 +140,6 @@ class SinkPipeline(Pipeline):
     def listen(self):
         self._loop.start()
 
-    #@state_change_while_stopping
     def request_stop(self):
         self._wait_to_state_ready()
         self._loop.request_stop()
@@ -171,7 +154,7 @@ class FullPipeline(SinkPipeline):
 
         self._qout = q_out
 
-    def run(self, token):
+    def run(self, token=None):
         run_and_put_to_q(self, token, self._qout)
 
 if __name__ == '__main__':

@@ -1,10 +1,11 @@
 from datetime import datetime
 
 from epypes.patterns.parallel import create_ppnode_from_nodes
-from epypes.splitters import copy_input_splitter
+from epypes.payload import copy_input_splitter
 from epypes.patterns.vision import CameraGrabNode
-from epypes.pipeline import Pipeline, SinkPipeline, make_pipeline
+from epypes.pipeline import Pipeline, SinkPipeline
 from epypes.node import Node
+from epypes.util import make_full_pipeline
 
 if __name__ == '__main__':
 
@@ -29,7 +30,7 @@ if __name__ == '__main__':
     sg = create_ppnode_from_nodes('MyStereoGrabber', [cam1, cam2], copy_input_splitter)
 
     spipe = Pipeline('StereoGrabPipe', [sg])
-    pipe, qin, qout = make_pipeline(spipe)
+    pipe, qin, qout = make_full_pipeline(spipe)
 
     print_node = Node('Printer', lambda x: print(x, abs(x[0][1] - x[1][1])))
     pipe_out = SinkPipeline('PrinterPipe', [print_node], qout)

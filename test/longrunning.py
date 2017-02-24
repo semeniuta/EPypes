@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     qin.put('QUEUE-EVENT')
 
-    #p.modify_argument('LRF', 'sleep_time', 1)
+    #p.modify_node_argument('LRF', 'sleep_time', 1)
     #p.run('PIPE-RUN')
 
 

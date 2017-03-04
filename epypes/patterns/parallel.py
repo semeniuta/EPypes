@@ -44,7 +44,7 @@ class ParallelPipesNode(Node):
 
     def __init__(self, name, pipelines, input_splitter, payload_index=None):
 
-        self._n_parallel =len(pipelines)
+        self._n_parallel = len(pipelines)
         self._indices = range(self._n_parallel)
 
         self._input_queues = [mp.Queue() for i in self._indices]

@@ -1,12 +1,10 @@
 from __future__ import print_function
 
 from threading import Thread
-import sys
-ver = sys.version_info[:2]
-if ver[0] == 2:
-    import Queue as queue
-else:
-    import queue
+
+class StopRequest(object):
+    def __repr__(self):
+        return 'StopRequest'
 
 class EventLoop(Thread):
 
@@ -14,7 +12,6 @@ class EventLoop(Thread):
 
         self._callback_node = callback_node
         self._token_q = q
-        self._stop_q = queue.Queue()
 
         Thread.__init__(self, target=self._eventloop)
 
@@ -22,13 +19,13 @@ class EventLoop(Thread):
 
         while True:
 
-            if not self._stop_q.empty():
-                self._stop_q.get()
+            token = self._token_q.get()
+
+            if token == 'STOP_REQUEST':
                 break
 
-            if not self._token_q.empty():
-                token = self._token_q.get()
-                self._callback_node.run(token)
+            self._callback_node.run(token)
+
 
     def request_stop(self):
-        self._stop_q.put(None)
+        self._token_q.put('STOP_REQUEST')

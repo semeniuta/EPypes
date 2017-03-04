@@ -16,15 +16,6 @@ def run_and_put_to_q(pipeline_object, token, q):
 def is_exception(token):
     return issubclass(type(token), Exception)
 
-def state_change_while_stopping(method):
-    def wrapper(*args, **kvargs):
-        self = args[0]
-        self._state = 'stopping'
-        res = method(*args, **kvargs)
-        self._state = 'stopped'
-        return res
-    return wrapper
-
 class Pipeline(Node):
 
     def __init__(self, name, nodes):

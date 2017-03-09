@@ -62,6 +62,9 @@ class Digraph(object):
             if v in self.adj(v0):
                 res.append(v0)
         return res
+        
+    def __repr__(self):
+        return str(self._adj)
 
     @property
     def vertices(self):
@@ -106,9 +109,6 @@ class BipartiteDigraph(Digraph):
 
     def _vertices_in_different_sets(self, a, b):
         return (a in self._V1 and b in self._V2) or (a in self._V2 and b in self._V1)
-
-
-
 
 
 class DepthFirstSearch(object):
@@ -217,25 +217,45 @@ class DepthFirstOrder(DepthFirstSearch):
 
 class ComputationalGraph(object):
 
-    def __init__(self, functions, token_names):
+    def __init__(self, func_dict, func_io):
 
-        self._functions = {f.__name__ : f for f in functions}
-        # does not account for usage of the same function multiple times
-
-        self._frozen = dict()
-
+        self._functions = func_dict
+        
         fnames = self._functions.keys()
-        self._G = BipartiteDigraph(fnames, token_names)
-        self._dfo = DepthFirstOrder(self._G)
+        self._inputs = {fname: [] for fname in fnames}
+        self._outputs = {fname: [] for fname in fnames}
 
-    def input_to(self, func_name, token_name):
-        self._G.add_edge(token_name, func_name)
-
-    def output_from(self, func_name, token_name):
-        self._G.add_edge(func_name, token_name)
-
-    def freeze_token(self, token_name, token_value):
-        self._frozen[token_name] = token_value
+        token_names = set()
+        edges = []
+        for fname in func_io:
+                        
+            if fname not in func_dict:
+                raise Exception('{} is not in set of functions')
+            f_in, f_out = func_io[fname]
+            
+            if type(f_in) is tuple:
+                for arg in f_in:
+                    token_names.add(arg)
+                    edges.append((arg, fname))
+                    self._inputs[fname].append(arg)
+            else:
+                token_names.add(f_in)
+                edges.append((f_in, fname))
+                self._inputs[fname].append(f_in)
+                
+            if type(f_out) is tuple:
+                for arg in f_out:
+                    token_names.add(arg)
+                    edges.append((fname, arg))
+                    self._outputs[fname].append(arg)
+            else:
+                token_names.add(f_out)
+                edges.append((fname, f_out))
+                self._outputs[fname].append(f_out)
+                                    
+                
+        self._G = BipartiteDigraph(fnames, token_names, edges)
+         
 
     def source_tokens(self, payload_only=True):
         res = []
@@ -245,19 +265,90 @@ class ComputationalGraph(object):
                     res.append(tk)
         return set(res)
 
+    def func_inputs(self, func_name):
+        return self._inputs[func_name]
+        
+    def func_outputs(self, func_name):
+        return self._outputs[func_name]
+
+    @property
+    def graph(self):
+        return self._G
+        
+    @property
+    def functions(self):
+        return self._functions
+        
+    @property
+    def tokens(self):
+        return self._G.vertices2
+        
+
+class HPManager(object):
+    
+    def __init__(self, cg):
+        self._cg = cg
+        self._values = {tk: None for tk in cg.tokens}
+        self._free = set(cg.tokens)
+        self._frozen = set()
+        
+    def freeze_token(self, token_name, token_value):
+        
+        if token_name not in self._cg.tokens:
+            raise Exception('{} is not a valid token name'.format(token_name))
+        
+        self._values[token_name] = token_value
+
+        if token_name in self._free:
+            self._free.remove(token_name)
+            self._frozen.add(token_name)
+            
+    def save_payload_value(self, token_name, token_value):
+        if token_name in self._frozen:
+            raise Exception('{} is a hyperparameter'.format(token_name))
+            
+        self._values[token_name] = token_value
+               
+    def token_value(self, token_name):
+        if token_name not in self._cg.tokens:
+            raise Exception('{} is not a valid token name'.format(token_name))
+            
+        return self._values[token_name]
+    
+    @property
+    def frozen(self):
+        return self._frozen
+        
+    @property
+    def free(self):
+        return self._free
+
+class CompGraphRunner(object):
+    
+    def __init__(self, cg):
+        self._cg = cg
+        self._dfo = DepthFirstOrder(self._cg.graph)
+        self._hpm = HPManager(self._cg)
+        
     def run(self, **kvargs):
 
         res = dict()
+        
         for v in reversed(self._dfo.postorder):
-            if v in self._frozen:
-                res[v] = self._frozen[v]
+            
+            if v in self._hpm.frozen:
+                res[v] = self._hpm.frozen[v]
+            
             elif v in kvargs:
                 res[v] = kvargs[v]
-            elif v in self._functions:
-                f = self._functions[v]
-                f_kvargs = {k: res[k] for k in self._G.preceding_vertices(v)}
-                f_out = f(**f_kvargs)
-                v_adj = self._G.adj(v)
+            
+            elif v in self._cg.functions:
+                
+                f = self._cg.functions[v]
+                f_args = [res[arg_name] for arg_name in self._cg.func_inputs(v)]
+                f_out = f(*f_args)
+                
+                v_adj = self._cg.graph.adj(v)
                 if len(v_adj) == 1:
                     res[v_adj[0]] = f_out
                 elif len(v_adj) > 1:
@@ -265,23 +356,9 @@ class ComputationalGraph(object):
                         res[tk] = f_out[i]
 
         return res
+        
+        
 
-
-
-    @property
-    def functions_set(self):
-        return self._G.vertices1
-
-    @property
-    def tokens_set(self):
-        return self._G.vertices2
-
-    @property
-    def frozen(self):
-        return self._frozen
-
-if __name__ == '__main__':
-    print('Test')
 
 
 

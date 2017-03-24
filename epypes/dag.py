@@ -220,7 +220,7 @@ class ComputationalGraph(object):
     def __init__(self, func_dict, func_io):
 
         self._functions = func_dict
-        
+
         fnames = self._functions.keys()
         self._inputs = {fname: [] for fname in fnames}
         self._outputs = {fname: [] for fname in fnames}
@@ -316,6 +316,10 @@ class TokenManager(object):
         return self._values[token_name]
 
     @property
+    def frozen_values(self):
+        return {tk: self._values[tk] for tk in self._frozen}
+
+    @property
     def frozen(self):
         return self._frozen
 
@@ -356,6 +360,10 @@ class CompGraphRunner(object):
 
     def token_value(self, token_name):
         return self._tm.token_value(token_name)
+
+    @property
+    def token_manager(self):
+        return self._tm
 
 
 

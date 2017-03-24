@@ -62,7 +62,7 @@ class Digraph(object):
             if v in self.adj(v0):
                 res.append(v0)
         return res
-        
+
     def __repr__(self):
         return str(self._adj)
 
@@ -228,11 +228,11 @@ class ComputationalGraph(object):
         token_names = set()
         edges = []
         for fname in func_io:
-                        
+
             if fname not in func_dict:
                 raise Exception('{} is not in set of functions')
             f_in, f_out = func_io[fname]
-            
+
             if type(f_in) is tuple:
                 for arg in f_in:
                     token_names.add(arg)
@@ -242,7 +242,7 @@ class ComputationalGraph(object):
                 token_names.add(f_in)
                 edges.append((f_in, fname))
                 self._inputs[fname].append(f_in)
-                
+
             if type(f_out) is tuple:
                 for arg in f_out:
                     token_names.add(arg)
@@ -252,10 +252,10 @@ class ComputationalGraph(object):
                 token_names.add(f_out)
                 edges.append((fname, f_out))
                 self._outputs[fname].append(f_out)
-                                    
-                
+
+
         self._G = BipartiteDigraph(fnames, token_names, edges)
-         
+
 
     def source_tokens(self, payload_only=True):
         res = []
@@ -267,102 +267,95 @@ class ComputationalGraph(object):
 
     def func_inputs(self, func_name):
         return self._inputs[func_name]
-        
+
     def func_outputs(self, func_name):
         return self._outputs[func_name]
 
     @property
     def graph(self):
         return self._G
-        
+
     @property
     def functions(self):
         return self._functions
-        
+
     @property
     def tokens(self):
         return self._G.vertices2
-        
 
-class HPManager(object):
-    
+
+class TokenManager(object):
+
     def __init__(self, cg):
         self._cg = cg
         self._values = {tk: None for tk in cg.tokens}
         self._free = set(cg.tokens)
         self._frozen = set()
-        
+
     def freeze_token(self, token_name, token_value):
-        
+
         if token_name not in self._cg.tokens:
             raise Exception('{} is not a valid token name'.format(token_name))
-        
+
         self._values[token_name] = token_value
 
         if token_name in self._free:
             self._free.remove(token_name)
             self._frozen.add(token_name)
-            
+
     def save_payload_value(self, token_name, token_value):
         if token_name in self._frozen:
             raise Exception('{} is a hyperparameter'.format(token_name))
-            
+
         self._values[token_name] = token_value
-               
+
     def token_value(self, token_name):
         if token_name not in self._cg.tokens:
             raise Exception('{} is not a valid token name'.format(token_name))
-            
+
         return self._values[token_name]
-    
+
     @property
     def frozen(self):
         return self._frozen
-        
+
     @property
     def free(self):
         return self._free
 
 class CompGraphRunner(object):
-    
+
     def __init__(self, cg):
         self._cg = cg
         self._torder = DepthFirstOrder(self._cg.graph).topological_order
-        self._hpm = HPManager(self._cg)
-        
-        self._res = {tk: None for tk in self._cg.tokens}
-        
-        #for tk in self._hpm.frozen:
-        #    self._res[tk] = self._hpm.token_value(tk)
-        
+        self._tm = TokenManager(self._cg)
+
     def run(self, **kvargs):
-        
+
         for v in self._torder:
-            
+
             if v in kvargs:
-                self._res[v] = kvargs[v]
-            
+                self._tm.freeze_token(v, kvargs[v])
+
             elif v in self._cg.functions:
-                
+
                 f = self._cg.functions[v]
-                f_args = [self._res[arg_name] for arg_name in self._cg.func_inputs(v)]
+                f_args = [self._tm.token_value(token_name) for token_name in self._cg.func_inputs(v)]
                 f_out = f(*f_args)
-                
+
                 v_adj = self._cg.graph.adj(v)
                 if len(v_adj) == 1:
-                    self._res[v_adj[0]] = f_out
+                    payload_token_name = v_adj[0]
+                    self._tm.save_payload_value(payload_token_name, f_out)
                 elif len(v_adj) > 1:
                     for i, tk in enumerate(v_adj):
-                        self._res[tk] = f_out[i]
-        
+                        self._tm.save_payload_value(tk, f_out[i])
+
     def freeze_token(self, token_name, token_value):
-        self._hpm.freeze_token(token_name, token_value)
-        self._res[token_name] = self._hpm.token_value(token_name)
-        
+        self._tm.freeze_token(token_name, token_value)
+
     def token_value(self, token_name):
-        return self._res[token_name]
-        
-        
+        return self._tm.token_value(token_name)
 
 
 

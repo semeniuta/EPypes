@@ -211,8 +211,8 @@ class DepthFirstOrder(DepthFirstSearch):
         return self._post
 
     @property
-    def reverse_postorder(self):
-        return reversed(self._post)
+    def topological_order(self):
+        return list(reversed(self._post))
 
 
 class ComputationalGraph(object):
@@ -327,35 +327,40 @@ class CompGraphRunner(object):
     
     def __init__(self, cg):
         self._cg = cg
-        self._dfo = DepthFirstOrder(self._cg.graph)
+        self._torder = DepthFirstOrder(self._cg.graph).topological_order
         self._hpm = HPManager(self._cg)
         
-    def run(self, **kvargs):
-
-        res = dict()
+        self._res = {tk: None for tk in self._cg.tokens}
         
-        for v in reversed(self._dfo.postorder):
+        #for tk in self._hpm.frozen:
+        #    self._res[tk] = self._hpm.token_value(tk)
+        
+    def run(self, **kvargs):
+        
+        for v in self._torder:
             
-            if v in self._hpm.frozen:
-                res[v] = self._hpm.frozen[v]
-            
-            elif v in kvargs:
-                res[v] = kvargs[v]
+            if v in kvargs:
+                self._res[v] = kvargs[v]
             
             elif v in self._cg.functions:
                 
                 f = self._cg.functions[v]
-                f_args = [res[arg_name] for arg_name in self._cg.func_inputs(v)]
+                f_args = [self._res[arg_name] for arg_name in self._cg.func_inputs(v)]
                 f_out = f(*f_args)
                 
                 v_adj = self._cg.graph.adj(v)
                 if len(v_adj) == 1:
-                    res[v_adj[0]] = f_out
+                    self._res[v_adj[0]] = f_out
                 elif len(v_adj) > 1:
                     for i, tk in enumerate(v_adj):
-                        res[tk] = f_out[i]
-
-        return res
+                        self._res[tk] = f_out[i]
+        
+    def freeze_token(self, token_name, token_value):
+        self._hpm.freeze_token(token_name, token_value)
+        self._res[token_name] = self._hpm.token_value(token_name)
+        
+    def token_value(self, token_name):
+        return self._res[token_name]
         
         
 

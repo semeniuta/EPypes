@@ -66,6 +66,7 @@ class SinkPipeline(Pipeline):
     def request_stop(self):
         self._loop.request_stop()
         self._loop.join()
+        Pipeline.request_stop(self)
 
 class FullPipeline(SinkPipeline):
 

@@ -2,16 +2,17 @@ from __future__ import print_function
 
 from threading import Thread
 
-class StopRequest(object):
-    def __repr__(self):
-        return 'StopRequest'
+from epypes.dag import UnderfinedSourceTokensException
 
 class EventLoop(Thread):
 
-    def __init__(self, q, callback_node):
+    def __init__(self, q, callback_pipeline, event_dispatcher, tokens_to_get=None):
 
-        self._callback_node = callback_node
-        self._token_q = q
+        self._q = q
+        self._callback_pipeline = callback_pipeline
+        self._event_dispatcher = event_dispatcher
+
+        self._tokens_to_get = tokens_to_get
 
         Thread.__init__(self, target=self._eventloop)
 
@@ -19,13 +20,20 @@ class EventLoop(Thread):
 
         while True:
 
-            token = self._token_q.get()
+            event = self._q.get()
 
-            if token == 'STOP_REQUEST':
+            if event == 'STOP_REQUEST':
                 break
 
-            self._callback_node.run(token)
-
+            try:
+                input_kvargs = self._event_dispatcher(event)
+                self._callback_pipeline.run(self._tokens_to_get, **input_kvargs)
+            except UnderfinedSourceTokensException:
+                pname = self._callback_pipeline.name
+                msg = 'Event supplied to {} doed not correspond to the required source tokens'.format(pname)
+                print(msg)
+            #except Exception as err:
+            #    print('An exception occured: ', err)
 
     def request_stop(self):
-        self._token_q.put('STOP_REQUEST')
+        self._q.put('STOP_REQUEST')

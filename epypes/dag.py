@@ -18,6 +18,9 @@ def create_nodes_from_comp_graph(cg):
 
     return nodes
 
+class UnderfinedSourceTokensException(Exception):
+    pass
+
 class Digraph(object):
 
     def __init__(self, vertices, edges=None):
@@ -62,6 +65,11 @@ class Digraph(object):
             if v in self.adj(v0):
                 return False
         return True
+
+    def is_sink_vertex(self, v):
+        if self._adj[v] == []:
+            return True
+        return False
 
     def preceding_vertices(self, v):
         remaining_vertices = self._V.difference([v])
@@ -235,6 +243,7 @@ class ComputationalGraph(object):
         self._outputs = {fname: [] for fname in fnames}
 
         self._src_tokens = None
+        self._snk_tokens = None
 
         token_names = set()
         edges = []
@@ -296,6 +305,20 @@ class ComputationalGraph(object):
                     res.append(tk)
             self._src_tokens = set(res)
             return self._src_tokens
+
+    @property
+    def sink_tokens(self):
+
+        if self._snk_tokens is not None:
+            return self._snk_tokens
+        else:
+            res = []
+            for tk in self.tokens:
+                if self._G.is_sink_vertex(tk):
+                    res.append(tk)
+            self._snk_tokens = set(res)
+            return self._snk_tokens
+
 
     def to_cg_with_nodes(self):
         nodes = create_nodes_from_comp_graph(self)
@@ -374,7 +397,8 @@ class CompGraphRunner(object):
 
         kvargs_set = set(kvargs.keys())
         if not self._tm.free_source_tokens.issubset(kvargs_set):
-            raise Exception('Some source tokens have undefined value')
+            raise UnderfinedSourceTokensException()
+            #raise Exception('Some source tokens have undefined value')
 
         for v in self._torder:
 

@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import multiprocessing as mp
 
-from epypes.dag import ComputationalGraph
+from epypes.compgraph import CompGraph
 from epypes.pipeline import Pipeline, SourcePipeline, SinkPipeline
 
 def say_hello(to_whom, exclamation=False):
@@ -19,7 +19,7 @@ def dispatch_greet(event_str):
 
 if __name__ == '__main__':
 
-    greet_cg = ComputationalGraph(
+    greet_cg = CompGraph(
 
         func_dict={
             'greet': say_hello,
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         }
     )
 
-    print_cg = ComputationalGraph(
+    print_cg = CompGraph(
         func_dict={'print': print},
         func_io={'print': ('input_string', None)}
     )
@@ -46,4 +46,7 @@ if __name__ == '__main__':
     print_pipe.listen()
 
     greet_pipe.run(name='Alex', tokens_to_get=('capitalized_string',))
+
+    greet_pipe.request_stop()
+    print_pipe.request_stop()
 

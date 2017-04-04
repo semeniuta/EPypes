@@ -6,14 +6,26 @@ from __future__ import print_function
 
 from epypes.node import Node
 from epypes.loop import EventLoop
-from epypes.dag import CompGraphRunner
+from epypes.compgraph import CompGraph, CompGraphRunner
 
 def run_and_put_to_q(pipeline_object, q, tokens_to_get, **kvargs):
     res = Pipeline.run(pipeline_object, tokens_to_get, **kvargs)
     q.put(res)
 
-def is_exception(token):
-    return issubclass(type(token), Exception)
+def attach(pipeline, nd, tokens_as_input, names_of_outputs, new_name):
+
+    func_dict = dict(pipeline.graph.functions)
+    func_io = dict(pipeline.graph.func_io)
+
+    func_dict[nd.name] = nd
+    func_io[nd.name] = tokens_as_input, names_of_outputs
+
+    new_cg = CompGraph(func_dict, func_io)
+    frozen = pipeline.runner.frozen_tokens
+
+    new_pipeline = Pipeline(new_name, new_cg, frozen_tokens=frozen)
+    return new_pipeline
+
 
 class Pipeline(Node):
 
@@ -37,7 +49,7 @@ class Pipeline(Node):
         self._runner.freeze_token(token_name, new_value)
 
     def traverse_time(self):
-        return (self.name, self.time, tuple(nd.traverse_time() for nd in self._cg.nodes))
+        return (self.name, self.time, tuple(nd.traverse_time() for nd in self._cg.nodes.values()))
 
     def token_value(self, token_name):
         return self._runner.token_value(token_name)

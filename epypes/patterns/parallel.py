@@ -1,7 +1,6 @@
 from epypes.pipeline import Pipeline, SourcePipeline, SinkPipeline, FullPipeline
 from epypes.node import Node
 from epypes.payload import split_payload_and_build_tokens
-from epypes.util import make_full_pipeline
 
 import multiprocessing as mp
 
@@ -42,7 +41,7 @@ class ParallelPipesNode(Node):
     in accordance with the logic in the supplied input_splitter function
     '''
 
-    def __init__(self, name, pipelines, input_splitter, payload_index=None):
+    def __init__(self, name, pipelines, input_splitter, payload_key=None):
 
         self._n_parallel = len(pipelines)
         self._indices = range(self._n_parallel)
@@ -52,7 +51,7 @@ class ParallelPipesNode(Node):
 
         self._input_splitter = input_splitter
 
-        self._payload_index =payload_index
+        self._payload_key =payload_key
 
         self._par_pipes = []
         for i in self._indices:

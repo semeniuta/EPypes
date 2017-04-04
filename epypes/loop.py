@@ -1,8 +1,9 @@
 from __future__ import print_function
 
 from threading import Thread
+import traceback
 
-from epypes.dag import UnderfinedSourceTokensException
+from epypes.compgraph import UnderfinedSourceTokensException
 
 class EventLoop(Thread):
 
@@ -30,10 +31,11 @@ class EventLoop(Thread):
                 self._callback_pipeline.run(self._tokens_to_get, **input_kvargs)
             except UnderfinedSourceTokensException:
                 pname = self._callback_pipeline.name
-                msg = 'Event supplied to {} doed not correspond to the required source tokens'.format(pname)
+                msg = 'Event supplied to {} does not correspond to the required source tokens'.format(pname)
                 print(msg)
-            #except Exception as err:
-            #    print('An exception occured: ', err)
+            except Exception as err:
+                print('An exception occurred when invoking {}. Exception details:'.format(self._callback_pipeline))
+                traceback.print_exc()
 
     def request_stop(self):
         self._q.put('STOP_REQUEST')

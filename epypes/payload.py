@@ -24,16 +24,16 @@ def equal_input_splitter(payload, n_parallel):
 
     return almost_all_chunks + last_chunk
 
-def split_payload_and_build_tokens(token, input_splitter, n_parallel, payload_index=None):
+def split_payload_and_build_tokens(payload, input_splitter, n_parallel, payload_index=None):
 
     def build_new_token(token, payload_part, payload_index):
         return tuple(payload_part if i is payload_index else el for i, el in enumerate(token))
 
     if payload_index is None:
-        token_parts = input_splitter(token, n_parallel)
+        token_parts = input_splitter(payload, n_parallel)
     else:
-        payload = token[payload_index]
+        payload = payload[payload_index]
         payload_parts = input_splitter(payload, n_parallel)
-        token_parts = tuple(build_new_token(token, payload_part, payload_index) for payload_part in payload_parts)
+        token_parts = tuple(build_new_token(payload, payload_part, payload_index) for payload_part in payload_parts)
 
     return token_parts

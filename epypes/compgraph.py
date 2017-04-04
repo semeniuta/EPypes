@@ -231,7 +231,7 @@ class DepthFirstOrder(DepthFirstSearch):
         return list(reversed(self._post))
 
 
-class ComputationalGraph(object):
+class CompGraph(object):
 
     def __init__(self, func_dict, func_io):
 
@@ -290,6 +290,10 @@ class ComputationalGraph(object):
         return self._functions
 
     @property
+    def func_io(self):
+        return self._func_io
+
+    @property
     def tokens(self):
         return self._G.vertices2
 
@@ -325,7 +329,7 @@ class ComputationalGraph(object):
         cg_with_nodes = NodeBasedCompGraph(func_dict=nodes, func_io=self._func_io)
         return cg_with_nodes
 
-class NodeBasedCompGraph(ComputationalGraph):
+class NodeBasedCompGraph(CompGraph):
 
     def swap(self, node_name, new_node):
         self._functions[node_name] = new_node
@@ -389,6 +393,7 @@ class CompGraphRunner(object):
         self._torder = DepthFirstOrder(self._cg.graph).topological_order
         self._tm = TokenManager(self._cg)
 
+        self._frozen_tokens = frozen_tokens
         if frozen_tokens is not None:
             for tk, tk_val in frozen_tokens.items():
                 self._tm.freeze_token(tk, tk_val)
@@ -427,6 +432,10 @@ class CompGraphRunner(object):
 
     def token_value(self, token_name):
         return self._tm.token_value(token_name)
+
+    @property
+    def frozen_tokens(self):
+        return self._frozen_tokens
 
     @property
     def required_source_tokens(self):

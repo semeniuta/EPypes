@@ -3,6 +3,7 @@
 #
 
 from epypes.node import Node
+import networkx as nx
 
 def create_set_of_vertices(vertices):
     V = set()
@@ -79,6 +80,19 @@ class Digraph(object):
                 res.append(v0)
         return res
 
+    def to_networkx(self, vert_attr={}, edge_attr={}):
+        # Attributes from:
+        # http://www.graphviz.org/doc/info/attrs.html
+
+        nxg = nx.DiGraph()
+
+        nxg.add_nodes_from(self._V, **vert_attr)
+        for v in self._V:
+            for w in self._adj[v]:
+                nxg.add_edge(v, w, **edge_attr)
+
+        return nxg
+
     def __repr__(self):
         return str(self._adj)
 
@@ -114,6 +128,19 @@ class BipartiteDigraph(Digraph):
             raise Exception('{0} -> {1} is not a valid edge'.format(a, b))
 
         Digraph.add_edge(self, a, b)
+
+    def to_networkx(self, vert1_attr={}, vert2_attr={}, edge_attr={}):
+
+        nxg = nx.DiGraph()
+
+        nxg.add_nodes_from(self._V1, bipartite=0, **vert1_attr)
+        nxg.add_nodes_from(self._V2, bipartite=1, **vert2_attr)
+
+        for v in self._V:
+            for w in self._adj[v]:
+                nxg.add_edge(v, w, **edge_attr)
+
+        return nxg
 
     @property
     def vertices1(self):
@@ -281,6 +308,16 @@ class CompGraph(object):
     def func_outputs(self, func_name):
         return self._outputs[func_name]
 
+    def to_networkx(self, func_v_attr={}, token_v_attr={}, edge_attr={}):
+
+        default_func_v_attr = {'shape': 'rect'}
+        for k in default_func_v_attr.keys():
+            if k not in func_v_attr:
+                func_v_attr[k] = default_func_v_attr[k]
+
+        return self._G.to_networkx(vert1_attr=func_v_attr, vert2_attr=token_v_attr, edge_attr=edge_attr)
+
+
     @property
     def graph(self):
         return self._G
@@ -368,6 +405,32 @@ class TokenManager(object):
             raise Exception('{} is not a valid token name'.format(token_name))
 
         return self._values[token_name]
+
+    def to_networkx(self, func_v_attr={}, free_token_v_attr={}, frozen_token_v_attr={}, edge_attr={}):
+
+
+        default_frozen_token_v_attr = {
+            'style': 'filled',
+            'fillcolor': 'gray'
+        }
+
+        for k in default_frozen_token_v_attr.keys():
+            if k not in frozen_token_v_attr:
+                frozen_token_v_attr[k] = default_frozen_token_v_attr[k]
+
+        nxg = self._cg.to_networkx(func_v_attr=func_v_attr, edge_attr=edge_attr)
+
+        for frozen_token_v in self.frozen:
+            this_node = nxg.node[frozen_token_v]
+            for k, v in frozen_token_v_attr.items():
+                this_node[k] = v
+
+        for free_token_v in self.free:
+            this_node = nxg.node[free_token_v]
+            for k, v in free_token_v_attr.items():
+                this_node[k] = v
+
+        return nxg
 
     @property
     def frozen_values(self):

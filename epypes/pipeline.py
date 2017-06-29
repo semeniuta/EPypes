@@ -14,8 +14,8 @@ def run_and_put_to_q(pipeline_object, q, tokens_to_get, **kvargs):
 
 def attach(pipeline, nd, tokens_as_input, names_of_outputs, new_name):
 
-    func_dict = dict(pipeline.graph.functions)
-    func_io = dict(pipeline.graph.func_io)
+    func_dict = dict(pipeline.cgraph.functions)
+    func_io = dict(pipeline.cgraph.func_io)
 
     func_dict[nd.name] = nd
     func_io[nd.name] = tokens_as_input, names_of_outputs
@@ -36,7 +36,8 @@ class Pipeline(Node):
         def master_function(**kvargs):
             self._runner.run(**kvargs)
 
-        Node.__init__(self, name, master_function)
+        #Node.__init__(self, name, master_function)
+        super(Pipeline, self).__init__(name, master_function)
 
     def run(self, tokens_to_get=None, **kvargs):
         self.__call__(**kvargs)
@@ -59,7 +60,7 @@ class Pipeline(Node):
             node.request_stop()
 
     @property
-    def graph(self):
+    def cgraph(self):
         return self._cg
 
     @property
@@ -69,16 +70,26 @@ class Pipeline(Node):
 class SourcePipeline(Pipeline):
     def __init__(self, name, comp_graph, q_out, frozen_tokens=None):
         self._qout = q_out
-        Pipeline.__init__(self, name, comp_graph, frozen_tokens)
+        #Pipeline.__init__(self, name, comp_graph, frozen_tokens)
+        super(SourcePipeline, self).__init__(name, comp_graph, frozen_tokens)
 
     def run(self, tokens_to_get=None, **kvargs):
         run_and_put_to_q(self, self._qout, tokens_to_get, **kvargs)
 
 class SinkPipeline(Pipeline):
-    def __init__(self, name, comp_graph, q_in, event_dispatcher, frozen_tokens=None):
+    def __init__(self, name, comp_graph, q_in, event_dispatcher=None, frozen_tokens=None):
+
         self._qin = q_in
+
+        def basic_event_dispatcher(e):
+            return e
+
+        if event_dispatcher is None:
+            event_dispatcher = basic_event_dispatcher
+
         self._loop = EventLoop(q_in, self, event_dispatcher)
-        Pipeline.__init__(self, name, comp_graph, frozen_tokens)
+        #Pipeline.__init__(self, name, comp_graph, frozen_tokens)
+        super(SinkPipeline, self).__init__(name, comp_graph, frozen_tokens)
 
     def listen(self):
         self._loop.start()
@@ -89,11 +100,12 @@ class SinkPipeline(Pipeline):
         Pipeline.request_stop(self)
 
 class FullPipeline(SinkPipeline):
-    def __init__(self, name, comp_graph, q_in, q_out, event_dispatcher, tokens_to_get, frozen_tokens=None):
-        self._qin = q_in
+    def __init__(self, name, comp_graph, q_in, q_out, event_dispatcher=None, frozen_tokens=None):
+        #self._qin = q_in
         self._qout = q_out
-        self._loop = EventLoop(q_in, self, event_dispatcher, tokens_to_get)
-        Pipeline.__init__(self, name, comp_graph, frozen_tokens)
+        #self._loop = EventLoop(q_in, self, event_dispatcher, tokens_to_get)
+        #Pipeline.__init__(self, name, comp_graph, frozen_tokens)
+        super(FullPipeline, self).__init__(name, comp_graph, q_in, event_dispatcher, frozen_tokens)
 
     def run(self, tokens_to_get=None, **kvargs):
         run_and_put_to_q(self, self._qout, tokens_to_get, **kvargs)

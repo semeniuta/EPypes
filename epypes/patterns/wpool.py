@@ -1,7 +1,26 @@
 from epypes.node import Node
+from epypes.pipeline import Pipeline
 
 import multiprocessing as mp
 import concurrent.futures as cf
+
+def wpool_node_from_cgraph(name, cg, frozen_tokens, target_input_token, tokens_to_get):
+
+    pipe = Pipeline(name, cg, frozen_tokens)
+
+    if pipe.runner.token_manager.free_source_tokens != {target_input_token}:
+        raise Exception('Free tokens other than target_input_token exist')
+
+    def func(item):
+        res = pipe.run(tokens_to_get, **{target_input_token: item})
+        return res
+
+
+    wpn_name = '{}WPool'.format(name)
+    wpn = ProcessWorkersPoolNode(wpn_name, func)
+
+    return wpn
+
 
 class ProcessWorkersPoolNode(Node):
     '''

@@ -258,6 +258,12 @@ class DepthFirstOrder(DepthFirstSearch):
         return list(reversed(self._post))
 
 
+class FunctionPlaceholder(object):
+
+    def __call__(self, *args, **kwargs):
+        raise Exception('FunctionPlaceholder can not be run by itself')
+
+
 class CompGraph(object):
 
     def __init__(self, func_dict, func_io):

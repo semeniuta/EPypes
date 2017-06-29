@@ -1,8 +1,6 @@
 import multiprocessing as mp
 import uuid
 
-from epypes import pipeline
-
 def create_name_with_uuid(TargetClass):
     return TargetClass.__name__ + str(uuid.uuid4())[:8]
 

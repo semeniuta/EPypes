@@ -41,7 +41,7 @@ class ParallelPipesNode(Node):
     in accordance with the logic in the supplied input_splitter function
     '''
 
-    def __init__(self, name, pipelines, input_splitter, payload_key=None):
+    def __init__(self, name, pipelines, input_splitter):
 
         self._n_parallel = len(pipelines)
         self._indices = range(self._n_parallel)
@@ -51,20 +51,23 @@ class ParallelPipesNode(Node):
 
         self._input_splitter = input_splitter
 
-        self._payload_key =payload_key
-
         self._par_pipes = []
         for i in self._indices:
 
             qin = self._input_queues[i]
-            pipe, _, _ = make_full_pipeline(pipelines[i], (qin, self._qout))
+            pipe_name = pipelines[i].name
+            cg = pipelines[i].cgraph
 
-            self._par_pipes.append(pipe)
-            pipe.listen()
+            par_pipe = FullPipeline(pipe_name, cg, qin, self._qout)
+
+            self._par_pipes.append(par_pipe)
+
+        for par_pipe in self._par_pipes:
+            par_pipe.listen()
 
         def node_func(token=None):
 
-            token_parts = split_payload_and_build_tokens(token, self._input_splitter, self._n_parallel, self._payload_index)
+            token_parts = input_splitter(token, self._n_parallel)
 
             for i, tk in enumerate(token_parts):
                 self._input_queues[i].put(tk)
@@ -95,17 +98,16 @@ class ParallelPipesNodeSim(ParallelPipesNode):
     while the API is retained
     '''
 
-    def __init__(self, name, pipelines, input_splitter, payload_index=None):
+    def __init__(self, name, pipelines, input_splitter):
 
         self._n_parallel =len(pipelines)
         self._indices = range(self._n_parallel)
         self._input_splitter = input_splitter
-        self._payload_index = payload_index
         self._par_pipes = pipelines
 
         def node_func(token=None):
 
-            token_parts = split_payload_and_build_tokens(token, self._input_splitter, self._n_parallel, self._payload_index)
+            token_parts = split_payload_and_build_tokens(token, self._input_splitter, self._n_parallel)
 
             res = ((i, self._par_pipes[i].run(token_parts[i])) for i in self._indices)
 

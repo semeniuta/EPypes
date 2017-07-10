@@ -47,6 +47,6 @@ if __name__ == '__main__':
 
     greet_pipe.run(name='Alex', tokens_to_get=('capitalized_string',))
 
-    greet_pipe.request_stop()
-    print_pipe.request_stop()
+    greet_pipe.stop()
+    print_pipe.stop()
 

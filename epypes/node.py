@@ -37,5 +37,5 @@ class Node(GenericObject):
     def traverse_time(self):
         return self.name, self.time
 
-    def request_stop(self):
+    def stop(self):
         pass

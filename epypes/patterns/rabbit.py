@@ -18,8 +18,8 @@ class RabbitMQPutQueue(object):
         self._chan.queue_declare(queue=self._rkey)
 
     def put(self, token):
-        self._chan.basic_publish(exchange=self._exchange, \
-                                 routing_key=self._rkey,  \
+        self._chan.basic_publish(exchange=self._exchange,
+                                 routing_key=self._rkey,
                                  body=token)
 
 def rabbitmq_eventloop_func(callback_node, chan, rkey, consumer_tag):
@@ -47,7 +47,7 @@ class RabbitMQEventLoop(object):
     def start(self):
         self._thread.start()
 
-    def request_stop(self):
+    def stop(self):
         # https://gist.github.com/swinton/5438483
         self._chan.basic_cancel(self._consumer_tag)
         print('Cancel OK')

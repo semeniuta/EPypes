@@ -37,5 +37,5 @@ class EventLoop(Thread):
                 print('An exception occurred when invoking {}. Exception details:'.format(self._callback_pipeline))
                 traceback.print_exc()
 
-    def request_stop(self):
+    def stop(self):
         self._q.put('STOP_REQUEST')

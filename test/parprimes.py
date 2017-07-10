@@ -32,8 +32,8 @@ if __name__ == '__main__':
     pnode = ProcessWorkersPoolNode('IsPrime', is_prime)
     snode = Node('IsPrimeSerial', series)
 
-    res1 = pnode.run(PRIMES)
-    res2 = snode.run(PRIMES)
+    res1 = pnode(PRIMES)
+    res2 = snode(PRIMES)
 
     print(pnode, pnode.time)
     print(snode, snode.time)

@@ -87,9 +87,9 @@ class ParallelPipesNode(Node):
     def par_pipelines(self):
         return self._par_pipes
 
-    def request_stop(self):
+    def stop(self):
         for pipe in self._par_pipes:
-            pipe.request_stop()
+            pipe.stop()
 
 class ParallelPipesNodeSim(ParallelPipesNode):
     '''

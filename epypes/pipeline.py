@@ -55,9 +55,9 @@ class Pipeline(Node):
     def token_value(self, token_name):
         return self._runner.token_value(token_name)
 
-    def request_stop(self):
+    def stop(self):
         for node in self._cg.nodes.values():
-            node.request_stop()
+            node.stop()
 
     @property
     def cgraph(self):
@@ -94,10 +94,10 @@ class SinkPipeline(Pipeline):
     def listen(self):
         self._loop.start()
 
-    def request_stop(self):
-        self._loop.request_stop()
+    def stop(self):
+        self._loop.stop()
         self._loop.join()
-        Pipeline.request_stop(self)
+        Pipeline.stop(self)
 
 class FullPipeline(SinkPipeline):
     def __init__(self, name, comp_graph, q_in, q_out, event_dispatcher=None, frozen_tokens=None):

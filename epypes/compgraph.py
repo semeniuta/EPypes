@@ -239,7 +239,6 @@ class CompGraphRunner(object):
         kvargs_set = set(kvargs.keys())
         if not self._tm.free_source_tokens.issubset(kvargs_set):
             raise UnderfinedSourceTokensException()
-            #raise Exception('Some source tokens have undefined value')
 
         for v in self._torder:
 
@@ -249,7 +248,7 @@ class CompGraphRunner(object):
             elif v in self._cg.functions:
 
                 f = self._cg.functions[v]
-                f_args = [self._tm.token_value(token_name) for token_name in self._cg.func_inputs(v)]
+                f_args = (self._tm.token_value(token_name) for token_name in self._cg.func_inputs(v))
                 f_out = f(*f_args)
 
                 v_adj = self._cg.graph.adj(v)

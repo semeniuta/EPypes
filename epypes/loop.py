@@ -24,6 +24,7 @@ class EventLoop(Thread):
             event = self._q.get()
 
             if event == 'STOP_REQUEST':
+                print('Stopping {}'.format(self))
                 break
 
             try:

@@ -240,4 +240,3 @@ class DepthFirstOrder(DepthFirstSearch):
     @property
     def topological_order(self):
         return list(reversed(self._post))
-

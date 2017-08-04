@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 from queue import Queue
 
@@ -42,8 +43,15 @@ if __name__ == '__main__':
 
     q = Queue()
 
+    default_address = 'ipc:///tmp/epypeszmq-testpub'
+
+    if len(sys.argv) == 1:
+        address = default_address
+    else:
+        address = sys.argv[1]
+
     pipe = SinkPipeline('make_vector', cg, q, event_dispatcher=dispatch_event)
-    sub = ZeroMQSubscriber('ipc:///tmp/epypeszmq-testpub', q)
+    sub = ZeroMQSubscriber(address, q)
 
     def stop():
         sub.stop()

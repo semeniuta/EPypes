@@ -32,6 +32,16 @@ class CompGraph(object):
         self._src_tokens = None
         self._snk_tokens = None
 
+        def add_input_arg(fname, arg, token_names, edges):
+            token_names.add(arg)
+            edges.append((arg, fname))
+            self._inputs[fname].append(arg)
+
+        def add_output_arg(fname, arg, token_names, edges):
+            token_names.add(arg)
+            edges.append((fname, arg))
+            self._outputs[fname].append(arg)
+
         token_names = set()
         edges = []
         for fname in func_io:
@@ -42,23 +52,15 @@ class CompGraph(object):
 
             if type(f_in) is tuple:
                 for arg in f_in:
-                    token_names.add(arg)
-                    edges.append((arg, fname))
-                    self._inputs[fname].append(arg)
+                    add_input_arg(fname, arg, token_names, edges)
             else:
-                token_names.add(f_in)
-                edges.append((f_in, fname))
-                self._inputs[fname].append(f_in)
+                add_input_arg(fname, f_in, token_names, edges)
 
             if type(f_out) is tuple:
                 for arg in f_out:
-                    token_names.add(arg)
-                    edges.append((fname, arg))
-                    self._outputs[fname].append(arg)
+                    add_output_arg(fname, arg, token_names, edges)
             else:
-                token_names.add(f_out)
-                edges.append((fname, f_out))
-                self._outputs[fname].append(f_out)
+                add_output_arg(fname, f_out, token_names, edges)
 
         self._G = BipartiteDigraph(fnames, token_names, edges)
 

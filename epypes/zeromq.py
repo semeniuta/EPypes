@@ -1,6 +1,7 @@
 
 import zmq
 from threading import Thread
+from epypes.loop import CommonEventLoop
 
 class ZeroMQSubscriber(Thread):
 
@@ -8,7 +9,6 @@ class ZeroMQSubscriber(Thread):
 
         self._context = zmq.Context()
         self._socket = self._context.socket(zmq.SUB)
-
         self._socket.connect(server_address)
         self._socket.setsockopt_string(zmq.SUBSCRIBE, sub_prefix)
 
@@ -23,7 +23,7 @@ class ZeroMQSubscriber(Thread):
         while True:
 
             try:
-                msg = self._socket.recv_string(flags=zmq.NOBLOCK)
+                msg = self._socket.recv(flags=zmq.NOBLOCK)
                 self._q.put(msg)
             except zmq.error.Again:
                 if self._stop_flag is True:
@@ -33,6 +33,28 @@ class ZeroMQSubscriber(Thread):
     def stop(self):
 
         self._stop_flag = True
+
+class ZeroMQPublisher(CommonEventLoop):
+
+    def __init__(self, server_address, q):
+
+        self._context = zmq.Context()
+        self._socket = self._context.socket(zmq.PUB)
+        self._socket.bind(server_address)
+
+        super(ZeroMQPublisher, self).__init__(q, callback_func=self._send)
+
+    def _send(self, data):
+
+        if type(data) == str:
+            self._socket.send_string(data)
+        else:
+            self._socket.send(data)
+
+
+
+
+
 
 
 

@@ -3,7 +3,7 @@ import zmq
 import random
 import time
 
-default_address = 'ipc:///tmp/epypeszmq-testpub'
+default_address = 'ipc:///tmp/epypeszmq-pub_1'
 
 if len(sys.argv) == 1:
     address = default_address
@@ -14,7 +14,7 @@ context = zmq.Context()
 pub_socket = context.socket(zmq.PUB)
 pub_socket.bind(address)
 
-print('Publishing to ', address)
+print('Publishing at ', address)
 
 while True:
 

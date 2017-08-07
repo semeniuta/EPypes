@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     q = Queue()
 
-    default_address = 'ipc:///tmp/epypeszmq-testpub'
+    default_address = 'ipc:///tmp/epypeszmq-pub_1'
 
     if len(sys.argv) == 1:
         address = default_address

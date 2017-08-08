@@ -21,7 +21,8 @@ pub_socket.bind(address)
 
 print('Publishing images at ', address)
 
-for im in im_cycle:
+#for im in im_cycle:
+for im in images:
 
-    #time.sleep(5)
+    time.sleep(0.03)
     pub_socket.send(bytearray(im))

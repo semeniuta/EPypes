@@ -43,15 +43,13 @@ class CGFindCorners(CompGraph):
         func_dict = {
             'open_image': open_image_from_bytesarray,
             'find_corners': find_cbc,
-            'reformat_corners': cbc_opencv_to_numpy,
-            'print': print
+            'reformat_corners': cbc_opencv_to_numpy
         }
 
         func_io = {
             'open_image': ('bytes', 'image'),
             'find_corners': (('image', 'pattern_size_wh'), ('success', 'corners_opencv')),
-            'reformat_corners': (('success', 'corners_opencv'), 'corners_np'),
-            'print': ('success', None)
+            'reformat_corners': (('success', 'corners_opencv'), 'corners_np')
         }
 
         super(CGFindCorners, self).__init__(func_dict, func_io)

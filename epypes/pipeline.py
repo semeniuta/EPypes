@@ -36,7 +36,6 @@ class Pipeline(Node):
         def master_function(**kvargs):
             self._runner.run(**kvargs)
 
-        #Node.__init__(self, name, master_function)
         super(Pipeline, self).__init__(name, master_function)
 
     def run(self, tokens_to_get=None, **kvargs):
@@ -70,7 +69,6 @@ class Pipeline(Node):
 class SourcePipeline(Pipeline):
     def __init__(self, name, comp_graph, q_out, frozen_tokens=None):
         self._qout = q_out
-        #Pipeline.__init__(self, name, comp_graph, frozen_tokens)
         super(SourcePipeline, self).__init__(name, comp_graph, frozen_tokens)
 
     def run(self, tokens_to_get=None, **kvargs):
@@ -88,7 +86,6 @@ class SinkPipeline(Pipeline):
             event_dispatcher = basic_event_dispatcher
 
         self._loop = EventLoop(q_in, self, event_dispatcher)
-        #Pipeline.__init__(self, name, comp_graph, frozen_tokens)
         super(SinkPipeline, self).__init__(name, comp_graph, frozen_tokens)
 
     def listen(self):
@@ -101,10 +98,7 @@ class SinkPipeline(Pipeline):
 
 class FullPipeline(SinkPipeline):
     def __init__(self, name, comp_graph, q_in, q_out, event_dispatcher=None, frozen_tokens=None):
-        #self._qin = q_in
         self._qout = q_out
-        #self._loop = EventLoop(q_in, self, event_dispatcher, tokens_to_get)
-        #Pipeline.__init__(self, name, comp_graph, frozen_tokens)
         super(FullPipeline, self).__init__(name, comp_graph, q_in, event_dispatcher, frozen_tokens)
 
     def run(self, tokens_to_get=None, **kvargs):

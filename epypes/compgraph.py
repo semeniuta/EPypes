@@ -9,6 +9,33 @@ def create_nodes_from_comp_graph(cg):
 
     return nodes
 
+def graph_union(cg1, cg2, add_func_dict=None, add_func_io=None):
+    def common_func_names_exist(cg1, cg2):
+        keys1 = cg1.func_io.keys()
+        keys2 = cg2.func_io.keys()
+        if set(keys1).intersection(keys2) == set():
+            return False
+        return True
+
+    def merge_dicts(d1, d2):
+        res = d1.copy()
+        res.update(d2)
+        return res
+
+    if common_func_names_exist(cg1, cg2):
+        raise Exception('Commong function names exist in the supplied graphs')
+
+    new_func_dict = merge_dicts(cg1.functions, cg2.functions)
+    new_func_io = merge_dicts(cg1.func_io, cg2.func_io)
+
+    if add_func_dict != None and add_func_io != None:
+        for func_name, func in add_func_dict.items():
+            new_func_dict[func_name] = func
+            new_func_io[func_name] = add_func_io[func_name]
+
+    return CompGraph(new_func_dict, new_func_io)
+
+
 class UnderfinedSourceTokensException(Exception):
     pass
 

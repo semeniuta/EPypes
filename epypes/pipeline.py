@@ -51,6 +51,12 @@ class Pipeline(Node):
     def traverse_time(self):
         return (self.name, self.time, tuple(nd.traverse_time() for nd in self._cg.nodes.values()))
 
+    def compute_overhead(self):
+        _, time_total, tt_nodes = self.traverse_time()
+        time_nodes = (t for _, t in tt_nodes)
+        return time_total - sum(time_nodes)
+
+
     def token_value(self, token_name):
         return self._runner.token_value(token_name)
 
@@ -67,6 +73,7 @@ class Pipeline(Node):
         return self._runner
 
 class SourcePipeline(Pipeline):
+
     def __init__(self, name, comp_graph, q_out, frozen_tokens=None):
         self._qout = q_out
         super(SourcePipeline, self).__init__(name, comp_graph, frozen_tokens)
@@ -75,6 +82,7 @@ class SourcePipeline(Pipeline):
         run_and_put_to_q(self, self._qout, tokens_to_get, **kvargs)
 
 class SinkPipeline(Pipeline):
+
     def __init__(self, name, comp_graph, q_in, event_dispatcher=None, frozen_tokens=None):
 
         self._qin = q_in
@@ -97,6 +105,7 @@ class SinkPipeline(Pipeline):
         Pipeline.stop(self)
 
 class FullPipeline(SinkPipeline):
+
     def __init__(self, name, comp_graph, q_in, q_out, event_dispatcher=None, frozen_tokens=None):
         self._qout = q_out
         super(FullPipeline, self).__init__(name, comp_graph, q_in, event_dispatcher, frozen_tokens)

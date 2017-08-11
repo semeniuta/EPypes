@@ -10,6 +10,7 @@ def create_nodes_from_comp_graph(cg):
     return nodes
 
 def graph_union(cg1, cg2, add_func_dict=None, add_func_io=None):
+
     def common_func_names_exist(cg1, cg2):
         keys1 = cg1.func_io.keys()
         keys2 = cg2.func_io.keys()
@@ -296,6 +297,9 @@ class CompGraphRunner(object):
 
     def token_value(self, token_name):
         return self._tm.token_value(token_name)
+
+    def __getitem__(self, token_name):
+        return self.token_value(token_name)
 
     @property
     def frozen_tokens(self):

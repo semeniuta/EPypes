@@ -13,6 +13,7 @@ def elementwise_input_splitter(payload, n_parallel):
     return tuple(payload) + tuple(None for i in range(sz_rest))
 
 def equal_input_splitter(payload, n_parallel):
+
     input_size = len(payload)
     if input_size <= n_parallel:
         return elementwise_input_splitter(payload, n_parallel)
@@ -24,10 +25,10 @@ def equal_input_splitter(payload, n_parallel):
 
     return almost_all_chunks + last_chunk
 
-def split_payload_and_build_tokens(payload, n_parallel, input_splitter, payload_index):
+def split_payload_and_build_tokens(token, input_splitter, n_parallel, payload_index):
     '''
     A function for splitting payload which is a part of a compound token.
-     
+
     If the token comprises a collection of homogeneous objects,
     use the following instead:
     token_parts = input_splitter(token, n_parallel)
@@ -36,8 +37,8 @@ def split_payload_and_build_tokens(payload, n_parallel, input_splitter, payload_
     def build_new_token(token, payload_part, payload_index):
         return tuple(payload_part if i is payload_index else el for i, el in enumerate(token))
 
-    payload = payload[payload_index]
+    payload = token[payload_index]
     payload_parts = input_splitter(payload, n_parallel)
-    token_parts = tuple(build_new_token(payload, payload_part, payload_index) for payload_part in payload_parts)
+    token_parts = tuple(build_new_token(token, payload_part, payload_index) for payload_part in payload_parts)
 
     return token_parts

@@ -60,6 +60,9 @@ class Pipeline(Node):
     def token_value(self, token_name):
         return self._runner.token_value(token_name)
 
+    def __getitem__(self, token_name):
+        return self.token_value(token_name)
+
     def stop(self):
         for node in self._cg.nodes.values():
             node.stop()

@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+message ImagePair {
+    required bytes image1 = 1;
+    required bytes image2 = 2;
+    optional string id = 3;
+}

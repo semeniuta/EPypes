@@ -18,10 +18,10 @@ print('Publishing at ', address)
 
 while True:
 
-    time.sleep(5)
     current_num = random.randint(1, 10)
     print('Sending {}'.format(current_num))
     pub_socket.send_string(str(current_num))
+    time.sleep(0.5)
 
 
 

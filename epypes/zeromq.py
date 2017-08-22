@@ -24,6 +24,7 @@ class ZeroMQSubscriber(Thread):
 
             try:
                 msg = self._socket.recv(flags=zmq.NOBLOCK)
+                print('Received msg')
                 self._q.put(msg)
             except zmq.error.Again:
                 if self._stop_flag is True:
@@ -45,11 +46,13 @@ class ZeroMQPublisher(CommonEventLoop):
         super(ZeroMQPublisher, self).__init__(q, callback_func=self._send)
 
     def _send(self, data):
+        print('Data to send:', type(data), data)
 
         if type(data) == str:
             self._socket.send_string(data)
         else:
             self._socket.send(data)
+        print('Sent msg', data)
 
 
 

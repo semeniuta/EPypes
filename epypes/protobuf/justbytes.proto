@@ -1,0 +1,5 @@
+syntax = "proto2";
+
+message JustBytes {
+    required bytes contents = 1;
+}

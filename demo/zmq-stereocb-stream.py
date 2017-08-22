@@ -4,7 +4,7 @@ import time
 import itertools
 from glob import glob
 
-import imagepair_pb2
+from epypes.protobuf.imagepair_pb2 import ImagePair
 
 default_address = 'ipc:///tmp/epypeszmq-cbim'
 images1_mask = '../DATA/IMG/calib/opencv_left/*.jpg'
@@ -30,9 +30,9 @@ print('Publishing images at ', address)
 #for im1, im2 in im_cycle:
 for im1, im2 in image_pairs:
 
-    time.sleep(0.003) # if this is commented and iteration is over im_cycle, the subscriber doesn't get anything
+    time.sleep(0.03) # if this is commented and iteration is over im_cycle, the subscriber doesn't get anything
 
-    pb_image_pair = imagepair_pb2.ImagePair()
+    pb_image_pair = ImagePair()
     pb_image_pair.image1 = im1
     pb_image_pair.image2 = im2
 

@@ -4,12 +4,15 @@ from queue import Queue
 import cv2
 from PIL import Image
 from io import BytesIO
+import pickle
 
 from epypes.compgraph import CompGraph
-from epypes.pipeline import SinkPipeline
-from epypes.zeromq import ZeroMQSubscriber
+from epypes.pipeline import FullPipeline, SinkPipeline
+from epypes.zeromq import ZeroMQSubscriber, ZeroMQPublisher
+from epypes.loop import CommonEventLoop
 
 from epypes.protobuf.imagepair_pb2 import ImagePair
+from epypes.protobuf.justbytes_pb2 import JustBytes
 
 def get_image_from_pb(pb_bytes):
 
@@ -46,6 +49,11 @@ def cbc_opencv_to_numpy(success, cbc_res):
     else:
         return None
 
+def ndarray_to_bytes(a):
+    pb_object = JustBytes()
+    pb_object.contents = pickle.dumps(a)
+    return pb_object
+
 class CGFindCorners(CompGraph):
 
     def __init__(self):
@@ -53,40 +61,49 @@ class CGFindCorners(CompGraph):
             'get_image_from_pb': get_image_from_pb,
             'open_image': open_image_from_bytes,
             'find_corners': find_cbc,
-            'reformat_corners': cbc_opencv_to_numpy
+            'reformat_corners': cbc_opencv_to_numpy,
+            'ndarray_to_bytes': ndarray_to_bytes
         }
 
         func_io = {
             'get_image_from_pb' : ('pb_bytes', 'image_bytes'),
             'open_image': ('image_bytes', 'image'),
             'find_corners': (('image', 'pattern_size_wh'), ('success', 'corners_opencv')),
-            'reformat_corners': (('success', 'corners_opencv'), 'corners_np')
+            'reformat_corners': (('success', 'corners_opencv'), 'corners_np'),
+            'ndarray_to_bytes': ('corners_np', 'corners_np_bytes')
         }
 
         super(CGFindCorners, self).__init__(func_dict, func_io)
 
+def dispatch_event(e):
+    return {'pb_bytes': e}
+
+default_sub_address = 'ipc:///tmp/psloop-stereopair'
+default_pub_address = 'ipc:///tmp/psloop-vision-response'
 
 if __name__ == '__main__':
 
-    def dispatch_event(e):
-        return {'pb_bytes': e}
+    sub_address = default_sub_address
+    pub_address = default_pub_address
 
-    default_address = 'ipc:///tmp/epypeszmq-cbim'
+    q_in = Queue()
+    q_temp = Queue()
+    q_out = Queue()
 
-    if len(sys.argv) == 1:
-        address = default_address
-    else:
-        address = sys.argv[1]
+    subscriber = ZeroMQSubscriber(sub_address, q_in)
 
-    q = Queue()
     cg = CGFindCorners()
-    pipe = SinkPipeline('FindCorners', cg, q, event_dispatcher=dispatch_event)
+    pipe = FullPipeline('FindCorners', cg, q_in, q_temp, event_dispatcher=dispatch_event, tokens_to_get=('corners_np_bytes',))
     pipe.runner.token_manager.freeze_token('pattern_size_wh', (9, 6))
-    sub = ZeroMQSubscriber(address, q)
 
-    def stop():
-        sub.stop()
-        pipe.stop()
+    publisher = ZeroMQPublisher(pub_address, q_out)
 
+    print('Starting publisher at', pub_address)
+    publisher.start()
+    print('Starting FullPipeline')
     pipe.listen()
-    sub.start()
+    print('Starting subscriber at', sub_address)
+    subscriber.start()
+
+
+

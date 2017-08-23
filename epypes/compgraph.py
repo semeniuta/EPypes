@@ -120,7 +120,6 @@ class CompGraph(object):
 
         return nxg
 
-
     @property
     def graph(self):
         return self._G
@@ -181,6 +180,7 @@ class NodeBasedCompGraph(CompGraph):
 class TokenManager(object):
 
     def __init__(self, cg):
+
         self._cg = cg
         self._values = {tk: None for tk in cg.tokens}
         self._free = set(cg.tokens)
@@ -191,6 +191,9 @@ class TokenManager(object):
         if token_name not in self._cg.tokens:
             raise Exception('{} is not a valid token name'.format(token_name))
 
+        if token_name not in self._cg.source_tokens:
+            raise Exception('{} is not a source token'.format(token_name))
+
         self._values[token_name] = token_value
 
         if token_name in self._free:
@@ -198,6 +201,7 @@ class TokenManager(object):
             self._frozen.add(token_name)
 
     def save_payload_value(self, token_name, token_value):
+
         if token_name in self._frozen:
             raise Exception('{} is a hyperparameter'.format(token_name))
 

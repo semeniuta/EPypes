@@ -36,13 +36,11 @@ class CommonEventLoop(Thread):
 
 class EventLoop(Thread):
 
-    def __init__(self, q, callback_pipeline, event_dispatcher, tokens_to_get=None):
+    def __init__(self, q, callback_pipeline, event_dispatcher):
 
         self._q = q
         self._callback_pipeline = callback_pipeline
         self._event_dispatcher = event_dispatcher
-
-        self._tokens_to_get = tokens_to_get
 
         self._counter = TimeCounter(q)
 
@@ -62,7 +60,7 @@ class EventLoop(Thread):
             try:
                 input_kvargs = self._event_dispatcher(event)
                 self._counter.on_processing_start()
-                self._callback_pipeline.run(self._tokens_to_get, **input_kvargs)
+                self._callback_pipeline.run(**input_kvargs)
                 self._counter.on_processing_end()
                 print(self._counter.summary)
 

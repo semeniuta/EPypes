@@ -78,6 +78,9 @@ class CGFindCorners(CompGraph):
 def dispatch_event(e):
     return {'pb_bytes': e}
 
+def prepare_output(runner):
+    return runner['corners_np']
+
 default_sub_address = 'ipc:///tmp/psloop-stereopair'
 default_pub_address = 'ipc:///tmp/psloop-vision-response'
 
@@ -87,14 +90,13 @@ if __name__ == '__main__':
     pub_address = default_pub_address
 
     q_in = Queue()
-    q_temp = Queue()
     q_out = Queue()
 
     subscriber = ZeroMQSubscriber(sub_address, q_in)
 
     cg = CGFindCorners()
-    pipe = FullPipeline('FindCorners', cg, q_in, q_temp, event_dispatcher=dispatch_event, tokens_to_get=('corners_np_bytes',))
-    pipe.runner.token_manager.freeze_token('pattern_size_wh', (9, 6))
+    pipe = FullPipeline('FindCorners', cg, q_in, q_out, dispatch_event, prepare_output)
+    pipe['pattern_size_wh'] = (9, 6)
 
     publisher = ZeroMQPublisher(pub_address, q_out)
 

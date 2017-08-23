@@ -8,12 +8,6 @@ from epypes.node import Node
 from epypes.loop import EventLoop
 from epypes.compgraph import CompGraph, CompGraphRunner
 
-def run_and_put_to_q(pipeline_object, q, tokens_to_get, **kvargs):
-    res = Pipeline.run(pipeline_object, tokens_to_get, **kvargs)
-    q.put(res)
-
-def basic_event_dispatcher(e):
-    return e
 
 def attach(pipeline, nd, tokens_as_input, names_of_outputs, new_name):
 
@@ -41,12 +35,8 @@ class Pipeline(Node):
 
         super(Pipeline, self).__init__(name, master_function)
 
-    def run(self, tokens_to_get=None, **kvargs):
+    def run(self, **kvargs):
         self.__call__(**kvargs)
-
-        if tokens_to_get is not None:
-            res = {tk: self._runner.token_value(tk) for tk in tokens_to_get}
-            return res
 
     def modify_frozen_token(self, token_name, new_value):
         self._runner.freeze_token(token_name, new_value)
@@ -59,12 +49,14 @@ class Pipeline(Node):
         time_nodes = (t for _, t in tt_nodes)
         return time_total - sum(time_nodes)
 
-
     def token_value(self, token_name):
         return self._runner.token_value(token_name)
 
     def __getitem__(self, token_name):
         return self.token_value(token_name)
+
+    def __setitem__(self, token_name, frozen_value):
+        self.modify_frozen_token(token_name, frozen_value)
 
     def stop(self):
         for node in self._cg.nodes.values():
@@ -80,21 +72,24 @@ class Pipeline(Node):
 
 class SourcePipeline(Pipeline):
 
-    def __init__(self, name, comp_graph, q_out, frozen_tokens=None):
+    def __init__(self, name, comp_graph, q_out, out_prep_func, frozen_tokens=None):
+
         self._qout = q_out
+        self._out_prep_func = out_prep_func
         super(SourcePipeline, self).__init__(name, comp_graph, frozen_tokens)
 
-    def run(self, tokens_to_get=None, **kvargs):
-        run_and_put_to_q(self, self._qout, tokens_to_get, **kvargs)
+    def run(self, **kvargs):
+
+        self.__call__(**kvargs)
+
+        e_out = self._out_prep_func(self.runner)
+        self._qout.put(e_out)
 
 class SinkPipeline(Pipeline):
 
-    def __init__(self, name, comp_graph, q_in, event_dispatcher=None, frozen_tokens=None):
+    def __init__(self, name, comp_graph, q_in, event_dispatcher, frozen_tokens=None):
 
         self._qin = q_in
-
-        if event_dispatcher is None:
-            event_dispatcher = basic_event_dispatcher
 
         self._loop = EventLoop(q_in, self, event_dispatcher)
         super(SinkPipeline, self).__init__(name, comp_graph, frozen_tokens)
@@ -109,19 +104,21 @@ class SinkPipeline(Pipeline):
 
 class FullPipeline(Pipeline):
 
-    def __init__(self, name, comp_graph, q_in, q_out, event_dispatcher=None, frozen_tokens=None, tokens_to_get=None):
+    def __init__(self, name, comp_graph, q_in, q_out, event_dispatcher, out_prep_func, frozen_tokens=None):
 
         self._qin = q_in
         self._qout = q_out
+        self._out_prep_func = out_prep_func
 
-        if event_dispatcher is None:
-            event_dispatcher = basic_event_dispatcher
-
-        self._loop = EventLoop(q_in, self, event_dispatcher, tokens_to_get)
+        self._loop = EventLoop(q_in, self, event_dispatcher)
         super(FullPipeline, self).__init__(name, comp_graph, frozen_tokens)
 
-    def run(self, tokens_to_get=None, **kvargs):
-        run_and_put_to_q(self, self._qout, tokens_to_get, **kvargs)
+    def run(self, **kvargs):
+
+        self.__call__(**kvargs)
+
+        e_out = self._out_prep_func(self.runner)
+        self._qout.put(e_out)
 
     def listen(self):
         self._loop.start()

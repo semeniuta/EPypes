@@ -26,7 +26,7 @@ if __name__ == '__main__':
     sub_socket.connect(sub_address)
     sub_socket.setsockopt_string(zmq.SUBSCRIBE, '')
 
-    WAIT_BETWEEN_REQUESTS = 2
+    WAIT_BETWEEN_REQUESTS = 0.1
 
     while True:
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         req_event.id = request_id
 
         pub_socket.send(req_event.SerializeToString())
-        print('Published at', pub_address, req_event)
+        print('Published at', pub_address)
 
         t1 = time.time()
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
         t2 = time.time()
 
-        print('[{0}] Time to get response:'.format(request_id, t2-t1))
+        print('[{0}] Time to get response: {1}'.format(request_id, t2-t1))
 
 
 

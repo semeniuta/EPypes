@@ -1,21 +1,19 @@
-import sys
+import sys, os
+sys.path.append(os.getcwd())
+
 import zmq
 import time
 import uuid
 
 from epypes.protobuf.event_pb2 import Event
+from epypes.cli import parse_pubsub_args
 
 default_pub_address = 'ipc:///tmp/psloop-vision-request'
 default_sub_address = 'ipc:///tmp/psloop-vision-response'
 
 if __name__ == '__main__':
 
-    if len(sys.argv) == 1:
-        pub_address = default_pub_address
-        sub_address = default_sub_address
-    else:
-        pub_address = sys.argv[1]
-        pub_address = sys.argv[2]
+    pub_address, sub_address = parse_pubsub_args(default_pub_address, default_sub_address)
 
     context = zmq.Context()
 
@@ -48,7 +46,7 @@ if __name__ == '__main__':
 
         t2 = time.time()
 
-        print('[{0}] Time to get response: {1}'.format(request_id, t2-t1))
+        print('[{}] Time to get response: {} {}'.format(request_id, t2-t1, t2-t0))
 
 
 

@@ -1,3 +1,6 @@
+import sys, os
+sys.path.append(os.getcwd())
+
 from queue import Queue
 from glob import glob
 from itertools import cycle
@@ -5,6 +8,7 @@ from itertools import cycle
 from epypes.zeromq import ZeroMQSubscriber, ZeroMQPublisher
 from epypes.loop import CommonEventLoop
 from epypes.protobuf.imagepair_pb2 import ImagePair
+from epypes.cli import parse_pubsub_args
 
 default_sub_address = 'ipc:///tmp/psloop-vision-request'
 default_pub_address = 'ipc:///tmp/psloop-stereopair'
@@ -35,8 +39,7 @@ def create_queue_putter(func, q_out):
 
 if __name__ == '__main__':
 
-    sub_address = default_sub_address
-    pub_address = default_pub_address
+    pub_address, sub_address = parse_pubsub_args(default_pub_address, default_sub_address)
 
     q_in = Queue()
     q_out = Queue()

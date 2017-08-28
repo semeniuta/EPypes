@@ -1,4 +1,6 @@
-import sys
+import sys, os
+sys.path.append(os.getcwd())
+
 import numpy as np
 from queue import Queue
 import cv2
@@ -7,12 +9,11 @@ from io import BytesIO
 import pickle
 
 from epypes.compgraph import CompGraph
-from epypes.pipeline import FullPipeline, SinkPipeline
+from epypes.pipeline import FullPipeline
 from epypes.zeromq import ZeroMQSubscriber, ZeroMQPublisher
-from epypes.loop import CommonEventLoop
-
 from epypes.protobuf.imagepair_pb2 import ImagePair
 from epypes.protobuf.justbytes_pb2 import JustBytes
+from epypes.cli import parse_pubsub_args
 
 def get_image_from_pb(pb_bytes):
 
@@ -86,8 +87,7 @@ default_pub_address = 'ipc:///tmp/psloop-vision-response'
 
 if __name__ == '__main__':
 
-    sub_address = default_sub_address
-    pub_address = default_pub_address
+    pub_address, sub_address = parse_pubsub_args(default_pub_address, default_sub_address)
 
     q_in = Queue()
     q_out = Queue()

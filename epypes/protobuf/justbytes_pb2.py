@@ -13,14 +13,16 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
+import timestamp_pb2 as timestamp__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='justbytes.proto',
   package='',
   syntax='proto2',
-  serialized_pb=_b('\n\x0fjustbytes.proto\"\x1d\n\tJustBytes\x12\x10\n\x08\x63ontents\x18\x01 \x02(\x0c')
-)
+  serialized_pb=_b('\n\x0fjustbytes.proto\x1a\x0ftimestamp.proto\"M\n\tJustBytes\x12\x10\n\x08\x63ontents\x18\x01 \x02(\x0c\x12\n\n\x02id\x18\x02 \x01(\t\x12\"\n\ntimestamps\x18\x03 \x01(\x0b\x32\x0e.TimeStampList')
+  ,
+  dependencies=[timestamp__pb2.DESCRIPTOR,])
 
 
 
@@ -39,6 +41,20 @@ _JUSTBYTES = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='id', full_name='JustBytes.id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='timestamps', full_name='JustBytes.timestamps', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -51,10 +67,11 @@ _JUSTBYTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19,
-  serialized_end=48,
+  serialized_start=36,
+  serialized_end=113,
 )
 
+_JUSTBYTES.fields_by_name['timestamps'].message_type = timestamp__pb2._TIMESTAMPLIST
 DESCRIPTOR.message_types_by_name['JustBytes'] = _JUSTBYTES
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 

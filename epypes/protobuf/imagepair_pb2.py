@@ -13,14 +13,17 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
+import timestamp_pb2 as timestamp__pb2
+import image_pb2 as image__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='imagepair.proto',
   package='',
   syntax='proto2',
-  serialized_pb=_b('\n\x0fimagepair.proto\"7\n\tImagePair\x12\x0e\n\x06image1\x18\x01 \x02(\x0c\x12\x0e\n\x06image2\x18\x02 \x02(\x0c\x12\n\n\x02id\x18\x03 \x01(\t')
-)
+  serialized_pb=_b('\n\x0fimagepair.proto\x1a\x0ftimestamp.proto\x1a\x0bimage.proto\"k\n\tImagePair\x12\x16\n\x06image1\x18\x01 \x02(\x0b\x32\x06.Image\x12\x16\n\x06image2\x18\x02 \x02(\x0b\x32\x06.Image\x12\n\n\x02id\x18\x03 \x01(\t\x12\"\n\ntimestamps\x18\x05 \x01(\x0b\x32\x0e.TimeStampList')
+  ,
+  dependencies=[timestamp__pb2.DESCRIPTOR,image__pb2.DESCRIPTOR,])
 
 
 
@@ -34,15 +37,15 @@ _IMAGEPAIR = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='image1', full_name='ImagePair.image1', index=0,
-      number=1, type=12, cpp_type=9, label=2,
-      has_default_value=False, default_value=_b(""),
+      number=1, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='image2', full_name='ImagePair.image2', index=1,
-      number=2, type=12, cpp_type=9, label=2,
-      has_default_value=False, default_value=_b(""),
+      number=2, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -50,6 +53,13 @@ _IMAGEPAIR = _descriptor.Descriptor(
       name='id', full_name='ImagePair.id', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='timestamps', full_name='ImagePair.timestamps', index=3,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -65,10 +75,13 @@ _IMAGEPAIR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19,
-  serialized_end=74,
+  serialized_start=49,
+  serialized_end=156,
 )
 
+_IMAGEPAIR.fields_by_name['image1'].message_type = image__pb2._IMAGE
+_IMAGEPAIR.fields_by_name['image2'].message_type = image__pb2._IMAGE
+_IMAGEPAIR.fields_by_name['timestamps'].message_type = timestamp__pb2._TIMESTAMPLIST
 DESCRIPTOR.message_types_by_name['ImagePair'] = _IMAGEPAIR
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 

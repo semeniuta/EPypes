@@ -1,5 +1,9 @@
 syntax = "proto2";
 
+import "timestamp.proto";
+
 message JustBytes {
     required bytes contents = 1;
+    optional string id = 2;
+    optional TimeStampList timestamps = 3;
 }

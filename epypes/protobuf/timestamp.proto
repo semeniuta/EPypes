@@ -1,0 +1,10 @@
+syntax = "proto2";
+
+message TimeStamp {
+    required string description = 1;
+    required double unixtime = 2;
+}
+
+message TimeStampList {
+    repeated TimeStamp entries = 1;
+}

@@ -1,7 +1,11 @@
 syntax = "proto2";
 
+import "timestamp.proto";
+import "image.proto";
+
 message ImagePair {
-    required bytes image1 = 1;
-    required bytes image2 = 2;
+    required Image image1 = 1;
+    required Image image2 = 2;
     optional string id = 3;
+    optional TimeStampList timestamps = 5;
 }

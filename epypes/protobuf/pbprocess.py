@@ -1,22 +1,44 @@
 
-def add_timestamp(pb_message, t, description):
+def add_attribute(pb_message, key, val):
 
-    timestamp = pb_message.timestamps.entries.add()
-    timestamp.unixtime = t
-    timestamp.description = description
+    attr = pb_message.attributes.entries.add()
 
-def copy_downstream_timestamps(pb_message_prev, pb_message):
+    attr.key = key
 
-    ds_timestamps = pb_message_prev.timestamps.entries
-    pb_message.timestamps.entries.extend(ds_timestamps)
+    if type(val) == str:
+        attr.type = 1
+        attr.str_val = val
+    elif type(val) == float:
+        attr.type = 2
+        attr.double_val = val
+    elif type(val) == int:
+        attr.type = 3
+        attr.int_val = val
+    else:
+        raise Exception('Wrong value type')
 
-def timestamp_entries_to_dict(ts_entries):
 
-    ts_dict = dict()
-    for entry in ts_entries:
-        ts_dict[entry.description] = entry.unixtime
+def copy_downstream_attributes(pb_message_prev, pb_message):
 
-    return  ts_dict
+    ds_attributes = pb_message_prev.attributes.entries
+    pb_message.attributes.entries.extend(ds_attributes)
+
+
+def get_attributes_dict(attr_entries):
+
+    attr_dict = dict()
+    for entry in attr_entries:
+
+        if entry.type == 1:
+            val = entry.str_val
+        elif entry.type == 2:
+            val = entry.double_val
+        else:
+            val = entry.int_val
+
+        attr_dict[entry.key] = val
+
+    return attr_dict
 
 
 

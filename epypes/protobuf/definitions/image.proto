@@ -1,10 +1,10 @@
 syntax = "proto2";
 
-import "timestamp.proto";
+import "attributes.proto";
 
 message Image {
     required bytes bytes = 1;
     optional string id = 2;
     optional string format = 3;
-    optional TimeStampList timestamps = 4;
+    optional AttributeList attributes = 4;
 }

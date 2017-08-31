@@ -11,7 +11,7 @@ from epypes.zeromq import ZeroMQSubscriber, ZeroMQPublisher
 from epypes.loop import CommonEventLoop
 from epypes.protobuf.imagepair_pb2 import ImagePair
 from epypes.protobuf.event_pb2 import Event
-from epypes.protobuf.pbprocess import add_timestamp, copy_downstream_timestamps
+from epypes.protobuf.pbprocess import add_attribute, copy_downstream_attributes
 from epypes.cli import parse_pubsub_args
 
 default_sub_address = 'ipc:///tmp/psloop-vision-request'
@@ -36,8 +36,8 @@ def gimme_stereopair(event):
     pb_image_pair = ImagePair()
     pb_image_pair.image1.bytes = im1
     pb_image_pair.image2.bytes = im2
-    copy_downstream_timestamps(event_pb, pb_image_pair)
-    add_timestamp(pb_image_pair, time_got_images, description='time_got_images')
+    copy_downstream_attributes(event_pb, pb_image_pair)
+    add_attribute(pb_image_pair, 'time_got_images', time_got_images)
 
     return pb_image_pair.SerializeToString()
 

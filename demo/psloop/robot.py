@@ -8,7 +8,7 @@ import uuid
 
 from epypes.protobuf.event_pb2 import Event
 from epypes.protobuf.justbytes_pb2 import JustBytes
-from epypes.protobuf.pbprocess import add_timestamp, timestamp_entries_to_dict
+from epypes.protobuf.pbprocess import add_attribute, get_attributes_dict
 from epypes.cli import parse_pubsub_args
 
 default_pub_address = 'ipc:///tmp/psloop-vision-request'
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         req_event = Event()
         req_event.type = 'VisionRequest'
         req_event.id = request_id
-        add_timestamp(req_event, t0, description='time_vision_request')
+        add_attribute(req_event, 'time_vision_request', t0)
 
         pub_socket.send(req_event.SerializeToString())
         print('Published at', pub_address)
@@ -54,8 +54,8 @@ if __name__ == '__main__':
 
         vision_response = JustBytes()
         vision_response.ParseFromString(response_data)
-        ts_dict = timestamp_entries_to_dict(vision_response.timestamps.entries)
-        print(ts_dict['time_got_images'] - ts_dict['time_vision_request'])
+        attr_dict = get_attributes_dict(vision_response.attributes.entries)
+        print(attr_dict['time_got_images'] - attr_dict['time_vision_request'])
 
         time.sleep(WAIT_BETWEEN_REQUESTS)
 

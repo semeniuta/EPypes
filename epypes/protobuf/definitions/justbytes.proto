@@ -1,9 +1,9 @@
 syntax = "proto2";
 
-import "timestamp.proto";
+import "attributes.proto";
 
 message JustBytes {
     required bytes contents = 1;
     optional string id = 2;
-    optional TimeStampList timestamps = 3;
+    optional AttributeList attributes = 3;
 }

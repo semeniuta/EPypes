@@ -14,7 +14,7 @@ from epypes.pipeline import FullPipeline
 from epypes.zeromq import ZeroMQSubscriber, ZeroMQPublisher
 from epypes.protobuf.imagepair_pb2 import ImagePair
 from epypes.protobuf.justbytes_pb2 import JustBytes
-from epypes.protobuf.pbprocess import copy_downstream_timestamps, add_timestamp
+from epypes.protobuf.pbprocess import copy_downstream_attributes, add_attribute
 from epypes.cli import parse_pubsub_args
 
 def get_image_from_pb(pb_object):
@@ -91,8 +91,8 @@ def prepare_output(pipe):
 
     pb_imagepair = pipe['pb_object']
 
-    copy_downstream_timestamps(pb_imagepair, pb_out)
-    add_timestamp(pb_out, pipe.time, description='time_processing')
+    copy_downstream_attributes(pb_imagepair, pb_out)
+    add_attribute(pb_out, 'time_processing', pipe.time)
 
     return pb_out.SerializeToString()
 

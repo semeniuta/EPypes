@@ -7,6 +7,7 @@ import cv2
 from PIL import Image
 from io import BytesIO
 import pickle
+import time
 
 from epypes.queue import Queue
 from epypes.compgraph import CompGraph
@@ -93,6 +94,8 @@ def prepare_output(pipe):
 
     copy_downstream_attributes(pb_imagepair, pb_out)
     add_attribute(pb_out, 'time_processing', pipe.time)
+
+    add_attribute(pb_out, 'time_visionpipe_pub', time.time())
 
     return pb_out.SerializeToString()
 

@@ -55,7 +55,11 @@ if __name__ == '__main__':
         vision_response = JustBytes()
         vision_response.ParseFromString(response_data)
         attr_dict = get_attributes_dict(vision_response.attributes.entries)
-        print(attr_dict['time_got_images'] - attr_dict['time_vision_request'])
+
+        trip_duration = t2 - attr_dict['time_vision_request']
+        overhead = trip_duration - attr_dict['time_processing']
+
+        print(trip_duration, attr_dict['time_processing'], overhead)
 
         time.sleep(WAIT_BETWEEN_REQUESTS)
 

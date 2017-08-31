@@ -82,7 +82,7 @@ class SourcePipeline(Pipeline):
 
         self.__call__(**kvargs)
 
-        e_out = self._out_prep_func(self.runner)
+        e_out = self._out_prep_func(self)
         self._qout.put(e_out)
 
 class SinkPipeline(Pipeline):
@@ -117,7 +117,7 @@ class FullPipeline(Pipeline):
 
         self.__call__(**kvargs)
 
-        e_out = self._out_prep_func(self.runner)
+        e_out = self._out_prep_func(self)
         self._qout.put(e_out)
 
     def listen(self):

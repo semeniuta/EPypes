@@ -7,7 +7,8 @@ import time
 import uuid
 
 from epypes.protobuf.event_pb2 import Event
-from epypes.protobuf.timestamp_pb2 import TimeStamp, TimeStampList
+from epypes.protobuf.justbytes_pb2 import JustBytes
+from epypes.protobuf.pbprocess import add_timestamp, timestamp_entries_to_dict
 from epypes.cli import parse_pubsub_args
 
 default_pub_address = 'ipc:///tmp/psloop-vision-request'
@@ -28,9 +29,8 @@ if __name__ == '__main__':
 
     WAIT_BETWEEN_REQUESTS = 0.1
 
+    time.sleep(1)
     while True:
-
-        time.sleep(WAIT_BETWEEN_REQUESTS)
 
         t0 = time.time()
 
@@ -39,20 +39,25 @@ if __name__ == '__main__':
         req_event = Event()
         req_event.type = 'VisionRequest'
         req_event.id = request_id
-        timestamp = req_event.timestamps.entries.add()
-        timestamp.unixtime = t0
-        timestamp.description = request_id + '_t0'
+        add_timestamp(req_event, t0, description='time_vision_request')
 
         pub_socket.send(req_event.SerializeToString())
         print('Published at', pub_address)
 
         t1 = time.time()
 
-        vision_response = sub_socket.recv()
+        response_data = sub_socket.recv()
 
         t2 = time.time()
 
-        print('[{}] Time to get response: {} {}'.format(request_id, t2-t1, t2-t0))
+        #print('[{}] Time to get response: {} {}'.format(request_id, t2-t1, t2-t0))
+
+        vision_response = JustBytes()
+        vision_response.ParseFromString(response_data)
+        ts_dict = timestamp_entries_to_dict(vision_response.timestamps.entries)
+        print(ts_dict['time_got_images'] - ts_dict['time_vision_request'])
+
+        time.sleep(WAIT_BETWEEN_REQUESTS)
 
 
 

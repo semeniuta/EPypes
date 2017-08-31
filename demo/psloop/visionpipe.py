@@ -1,30 +1,29 @@
 import sys, os
 sys.path.append(os.getcwd())
+sys.path.append(os.path.join(os.getcwd(), 'epypes/protobuf'))
 
 import numpy as np
-from queue import Queue
 import cv2
 from PIL import Image
 from io import BytesIO
 import pickle
 
+from epypes.queue import Queue
 from epypes.compgraph import CompGraph
 from epypes.pipeline import FullPipeline
 from epypes.zeromq import ZeroMQSubscriber, ZeroMQPublisher
 from epypes.protobuf.imagepair_pb2 import ImagePair
 from epypes.protobuf.justbytes_pb2 import JustBytes
+from epypes.protobuf.pbprocess import copy_downstream_timestamps, add_timestamp
 from epypes.cli import parse_pubsub_args
 
-def get_image_from_pb(pb_bytes):
+def get_image_from_pb(pb_object):
 
-    pb_object = ImagePair()
-    pb_object.ParseFromString(pb_bytes)
+    return pb_object.image1.bytes
 
-    return pb_object.image1
+def open_image_from_bytes(image_bytes):
 
-def open_image_from_bytes(ba):
-
-    buff = BytesIO(ba)
+    buff = BytesIO(image_bytes)
     im = np.array(Image.open(buff))
     return im
 
@@ -67,7 +66,7 @@ class CGFindCorners(CompGraph):
         }
 
         func_io = {
-            'get_image_from_pb' : ('pb_bytes', 'image_bytes'),
+            'get_image_from_pb': ('pb_object', 'image_bytes'),
             'open_image': ('image_bytes', 'image'),
             'find_corners': (('image', 'pattern_size_wh'), ('success', 'corners_opencv')),
             'reformat_corners': (('success', 'corners_opencv'), 'corners_np'),
@@ -77,10 +76,25 @@ class CGFindCorners(CompGraph):
         super(CGFindCorners, self).__init__(func_dict, func_io)
 
 def dispatch_event(e):
-    return {'pb_bytes': e}
 
-def prepare_output(runner):
-    return runner['corners_np']
+    pb_object = ImagePair()
+    pb_object.ParseFromString(e)
+
+    return {'pb_object': pb_object}
+
+def prepare_output(pipe):
+
+    arr = pipe['corners_np']
+
+    pb_out = JustBytes()
+    pb_out.contents = pickle.dumps(arr)
+
+    pb_imagepair = pipe['pb_object']
+
+    copy_downstream_timestamps(pb_imagepair, pb_out)
+    add_timestamp(pb_out, pipe.time, description='time_processing')
+
+    return pb_out.SerializeToString()
 
 default_sub_address = 'ipc:///tmp/psloop-stereopair'
 default_pub_address = 'ipc:///tmp/psloop-vision-response'

@@ -1,13 +1,17 @@
 import sys, os
 sys.path.append(os.getcwd())
+sys.path.append(os.path.join(os.getcwd(), 'epypes/protobuf'))
 
-from queue import Queue
+import time
 from glob import glob
 from itertools import cycle
 
+from epypes.queue import Queue
 from epypes.zeromq import ZeroMQSubscriber, ZeroMQPublisher
 from epypes.loop import CommonEventLoop
 from epypes.protobuf.imagepair_pb2 import ImagePair
+from epypes.protobuf.event_pb2 import Event
+from epypes.protobuf.pbprocess import add_timestamp, copy_downstream_timestamps
 from epypes.cli import parse_pubsub_args
 
 default_sub_address = 'ipc:///tmp/psloop-vision-request'
@@ -21,19 +25,26 @@ images2 = (open(fname, 'rb').read() for fname in glob(images2_mask))
 image_pairs = zip(images1, images2)
 im_cycle = cycle(image_pairs)
 
-def gimme_stereopair():
+def gimme_stereopair(event):
+
+    event_pb = Event()
+    event_pb.ParseFromString(event)
+
     im1, im2 = next(im_cycle)
+    time_got_images = time.time()
 
     pb_image_pair = ImagePair()
-    pb_image_pair.image1 = im1
-    pb_image_pair.image2 = im2
+    pb_image_pair.image1.bytes = im1
+    pb_image_pair.image2.bytes = im2
+    copy_downstream_timestamps(event_pb, pb_image_pair)
+    add_timestamp(pb_image_pair, time_got_images, description='time_got_images')
 
     return pb_image_pair.SerializeToString()
 
 def create_queue_putter(func, q_out):
 
     def wrapper(event):
-        q_out.put(func())
+        q_out.put(func(event))
 
     return wrapper
 

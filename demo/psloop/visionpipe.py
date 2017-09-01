@@ -93,9 +93,10 @@ def prepare_output(pipe):
     pb_imagepair = pipe['pb_object']
 
     copy_downstream_attributes(pb_imagepair, pb_out)
-    add_attribute(pb_out, 'time_processing', pipe.time)
-
+    add_attribute(pb_out, 'vision_processing_time', pipe.time)
+    add_attribute(pb_out, 'epypes_overhead', pipe.compute_overhead())
     add_attribute(pb_out, 'time_visionpipe_pub', time.time())
+    add_attribute(pb_out, 'time_visionpipe_reacted', pipe.loop.counter.timestamp_event_arrival)
 
     return pb_out.SerializeToString()
 

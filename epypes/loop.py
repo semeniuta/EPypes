@@ -75,6 +75,10 @@ class EventLoop(Thread):
     def stop(self):
         self._q.put('STOP_REQUEST')
 
+    @property
+    def counter(self):
+        return self._counter
+
 
 class TimeCounter(object):
 
@@ -122,6 +126,10 @@ class TimeCounter(object):
     @property
     def summary(self):
         return self._summary
+
+    @property
+    def timestamp_event_arrival(self):
+        return self._t_event
 
 
 

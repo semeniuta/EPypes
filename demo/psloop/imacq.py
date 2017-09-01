@@ -27,6 +27,8 @@ im_cycle = cycle(image_pairs)
 
 def gimme_stereopair(event):
 
+    time_imacq_reacted_to_request = time.time()
+
     event_pb = Event()
     event_pb.ParseFromString(event)
 
@@ -38,6 +40,7 @@ def gimme_stereopair(event):
     pb_image_pair.image2.bytes = im2
     copy_downstream_attributes(event_pb, pb_image_pair)
     add_attribute(pb_image_pair, 'time_got_images', time_got_images)
+    add_attribute(pb_image_pair, 'time_imacq_reacted_to_request', time_imacq_reacted_to_request)
 
     return pb_image_pair.SerializeToString()
 

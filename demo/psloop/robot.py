@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.getcwd(), 'epypes/protobuf'))
 import zmq
 import time
 import uuid
+import pandas as pd
 
 from epypes.protobuf.event_pb2 import Event
 from epypes.protobuf.justbytes_pb2 import JustBytes
@@ -29,8 +30,13 @@ if __name__ == '__main__':
 
     WAIT_BETWEEN_REQUESTS = 0.1
 
-    time.sleep(1)
-    while True:
+    N_REQUESTS = 50
+
+    all_attr_dicts = []
+
+    time.sleep(1) # <- somehow the first request gets lost w/o this waiting in the beginning
+
+    for req_attempt_i in range(N_REQUESTS):
 
         t0 = time.time()
 
@@ -50,18 +56,20 @@ if __name__ == '__main__':
 
         t2 = time.time()
 
-        #print('[{}] Time to get response: {} {}'.format(request_id, t2-t1, t2-t0))
-
         vision_response = JustBytes()
         vision_response.ParseFromString(response_data)
         attr_dict = get_attributes_dict(vision_response.attributes.entries)
 
-        trip_duration = t2 - attr_dict['time_vision_request']
-        overhead = trip_duration - attr_dict['time_processing']
+        #overhead = trip_duration - attr_dict['time_processing']
+        #attr_dict['trip_duration'] = t2 - attr_dict['time_vision_request']
 
-        print(trip_duration, attr_dict['time_processing'], overhead)
+        attr_dict['time_got_vision_response'] = t2
+        all_attr_dicts.append(attr_dict)
 
         time.sleep(WAIT_BETWEEN_REQUESTS)
+
+    df = pd.DataFrame(all_attr_dicts)
+    df.to_csv('experiment.csv')
 
 
 

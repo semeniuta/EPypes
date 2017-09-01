@@ -102,6 +102,10 @@ class SinkPipeline(Pipeline):
         self._loop.join()
         Pipeline.stop(self)
 
+    @property
+    def loop(self):
+        return self._loop
+
 class FullPipeline(Pipeline):
 
     def __init__(self, name, comp_graph, q_in, q_out, event_dispatcher, out_prep_func, frozen_tokens=None):
@@ -127,4 +131,8 @@ class FullPipeline(Pipeline):
         self._loop.stop()
         self._loop.join()
         Pipeline.stop(self)
+
+    @property
+    def loop(self):
+        return self._loop
 

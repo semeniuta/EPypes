@@ -1,6 +1,81 @@
 from epypes.node import Node
 from epypes.graph import BipartiteDigraph, DepthFirstOrder
 
+def rename_in_dict(d, old_key, new_key):
+
+    d[new_key] = d[old_key]
+    del d[old_key]
+
+
+def common_func_names_exist(cg1, cg2):
+    keys1 = cg1.func_io.keys()
+    keys2 = cg2.func_io.keys()
+    if set(keys1).intersection(keys2) == set():
+        return False
+    return True
+
+def add_suffix_to_dict_values(d, key, suffix):
+
+    def rename(obj):
+        if type(obj) is str:
+            return obj + suffix
+        return tuple(rename(el) for el in obj)
+
+
+    return tuple(rename(el) for el in d[key])
+
+def merge_dicts(d1, d2, suffix_1=None, suffix_2=None, rename_values=False):
+
+    if suffix_1 is not None:
+        res = dict()
+        for k in d1:
+            new_k = k + suffix_1
+            if rename_values:
+                val = add_suffix_to_dict_values(d1, k, suffix_1)
+            else:
+                val = d1[k]
+            res[new_k] = val
+    else:
+        res = d1.copy()
+
+    if suffix_2 is not None:
+        for k in d2:
+            new_k = k + suffix_2
+            if rename_values:
+                val = add_suffix_to_dict_values(d2, k, suffix_2)
+            else:
+                val = d2[k]
+            res[new_k] = val
+    else:
+        res.update(d2)
+
+    return res
+
+
+def add_new_vertices(cg, add_func_dict, add_func_io):
+
+    for func_name in set(add_func_dict.keys()).union(set(add_func_io.keys())):
+        if func_name in cg.functions:
+            raise Exception('Function {} already exists'.format(func_name))
+
+    new_func_dict = cg.functions.copy()
+    new_func_io = cg.func_io.copy()
+
+    for func_name, func in add_func_dict.items():
+        new_func_dict[func_name] = func
+        new_func_io[func_name] = add_func_io[func_name]
+
+    return CompGraph(new_func_dict, new_func_io)
+
+
+def graph_union_with_suffixing(cg1, cg2, suff_1='_1', suff_2='_2'):
+
+    new_func_dict = merge_dicts(cg1.functions, cg2.functions, suff_1, suff_2)
+    new_func_io = merge_dicts(cg1.func_io, cg2.func_io, suff_1, suff_2, rename_values=True)
+
+    return CompGraph(new_func_dict, new_func_io)
+
+
 def create_nodes_from_comp_graph(cg):
 
     nodes = dict()
@@ -8,34 +83,6 @@ def create_nodes_from_comp_graph(cg):
         nodes[fname] = Node(fname, f)
 
     return nodes
-
-def graph_union(cg1, cg2, add_func_dict=None, add_func_io=None):
-
-    def common_func_names_exist(cg1, cg2):
-        keys1 = cg1.func_io.keys()
-        keys2 = cg2.func_io.keys()
-        if set(keys1).intersection(keys2) == set():
-            return False
-        return True
-
-    def merge_dicts(d1, d2):
-        res = d1.copy()
-        res.update(d2)
-        return res
-
-    if common_func_names_exist(cg1, cg2):
-        raise Exception('Commong function names exist in the supplied graphs')
-
-    new_func_dict = merge_dicts(cg1.functions, cg2.functions)
-    new_func_io = merge_dicts(cg1.func_io, cg2.func_io)
-
-    if add_func_dict != None and add_func_io != None:
-        for func_name, func in add_func_dict.items():
-            new_func_dict[func_name] = func
-            new_func_io[func_name] = add_func_io[func_name]
-
-    return CompGraph(new_func_dict, new_func_io)
-
 
 class UnderfinedSourceTokensException(Exception):
     pass
@@ -97,6 +144,15 @@ class CompGraph(object):
 
     def func_outputs(self, func_name):
         return self._outputs[func_name]
+
+    def rename_function(self, old_name, new_name):
+
+        if old_name not in self._functions:
+            raise Exception('No function with name {} exists'.format(old_name))
+
+        if old_name != new_name:
+            rename_in_dict(self._functions, old_name, new_name)
+            rename_in_dict(self._func_io, old_name, new_name)
 
     def swap_function(self, key, new_func):
 

@@ -14,24 +14,28 @@ def common_func_names_exist(cg1, cg2):
         return False
     return True
 
-def add_suffix_to_dict_values(d, key, suffix):
+def add_suffix_to_dict_values(d, key, suffix, exclude_suffixing=None):
 
     def rename(obj):
+
+        if exclude_suffixing is not None and obj in exclude_suffixing:
+            return  obj
+
         if type(obj) is str:
             return obj + suffix
-        return tuple(rename(el) for el in obj)
 
+        return tuple(rename(el) for el in obj)
 
     return tuple(rename(el) for el in d[key])
 
-def merge_dicts(d1, d2, suffix_1=None, suffix_2=None, rename_values=False):
+def merge_dicts(d1, d2, suffix_1=None, suffix_2=None, rename_values=False, exclude_value_suffixing=None):
 
     if suffix_1 is not None:
         res = dict()
         for k in d1:
             new_k = k + suffix_1
             if rename_values:
-                val = add_suffix_to_dict_values(d1, k, suffix_1)
+                val = add_suffix_to_dict_values(d1, k, suffix_1, exclude_value_suffixing)
             else:
                 val = d1[k]
             res[new_k] = val
@@ -42,7 +46,7 @@ def merge_dicts(d1, d2, suffix_1=None, suffix_2=None, rename_values=False):
         for k in d2:
             new_k = k + suffix_2
             if rename_values:
-                val = add_suffix_to_dict_values(d2, k, suffix_2)
+                val = add_suffix_to_dict_values(d2, k, suffix_2, exclude_value_suffixing)
             else:
                 val = d2[k]
             res[new_k] = val
@@ -54,9 +58,9 @@ def merge_dicts(d1, d2, suffix_1=None, suffix_2=None, rename_values=False):
 
 def add_new_vertices(cg, add_func_dict, add_func_io):
 
-    for func_name in set(add_func_dict.keys()).union(set(add_func_io.keys())):
-        if func_name in cg.functions:
-            raise Exception('Function {} already exists'.format(func_name))
+    #for func_name in set(add_func_dict.keys()).union(set(add_func_io.keys())):
+    #    if func_name in cg.functions:
+    #        raise Exception('Function {} already exists'.format(func_name))
 
     new_func_dict = cg.functions.copy()
     new_func_io = cg.func_io.copy()
@@ -68,10 +72,10 @@ def add_new_vertices(cg, add_func_dict, add_func_io):
     return CompGraph(new_func_dict, new_func_io)
 
 
-def graph_union_with_suffixing(cg1, cg2, suff_1='_1', suff_2='_2'):
+def graph_union_with_suffixing(cg1, cg2, suff_1='_1', suff_2='_2', exclude=None):
 
     new_func_dict = merge_dicts(cg1.functions, cg2.functions, suff_1, suff_2)
-    new_func_io = merge_dicts(cg1.func_io, cg2.func_io, suff_1, suff_2, rename_values=True)
+    new_func_io = merge_dicts(cg1.func_io, cg2.func_io, suff_1, suff_2, rename_values=True, exclude_value_suffixing=exclude)
 
     return CompGraph(new_func_dict, new_func_io)
 

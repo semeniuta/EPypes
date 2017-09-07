@@ -62,7 +62,7 @@ class EventLoop(Thread):
                 self._counter.on_processing_start()
                 self._callback_pipeline.run(**input_kvargs)
                 self._counter.on_processing_end()
-                print(self._counter.summary)
+                #print(self._counter.summary)
 
             except UnderfinedSourceTokensException:
                 pname = self._callback_pipeline.name

@@ -1,5 +1,6 @@
 import sys, os
 sys.path.append(os.getcwd())
+sys.path.append(os.path.abspath('../RPALib'))
 sys.path.append(os.path.join(os.getcwd(), 'epypes/protobuf'))
 
 import numpy as np
@@ -8,9 +9,10 @@ from PIL import Image
 from io import BytesIO
 import pickle
 import time
+from functools import partial
 
 from epypes.queue import Queue
-from epypes.compgraph import CompGraph
+from epypes.compgraph import CompGraph, add_new_vertices
 from epypes.pipeline import FullPipeline
 from epypes.zeromq import ZeroMQSubscriber, ZeroMQPublisher
 from epypes.protobuf.imagepair_pb2 import ImagePair
@@ -18,56 +20,25 @@ from epypes.protobuf.justbytes_pb2 import JustBytes
 from epypes.protobuf.pbprocess import copy_downstream_attributes, add_attribute
 from epypes.cli import parse_pubsub_args
 
-def get_image_from_pb(pb_object):
-
-    return pb_object.image1.bytes
+from rpa.features import create_feature_matching_cg, METHOD_PARAMS
 
 def open_image_from_bytes(image_bytes):
 
     buff = BytesIO(image_bytes)
-    im = np.array(Image.open(buff))
-    return im
+    return np.array(Image.open(buff))
 
-def find_cbc(img, pattern_size_wh, searchwin_size=5, findcbc_flags=None):
+def get_image_pair_from_pb(pb_object):
 
-    if findcbc_flags == None:
-        res = cv2.findChessboardCorners(img, pattern_size_wh)
-    else:
-        res = cv2.findChessboardCorners(img, pattern_size_wh, flags=findcbc_flags)
+    image_bytes = (pb_object.image1.bytes, pb_object.image2.bytes)
+    return tuple(open_image_from_bytes(im_b) for im_b in image_bytes)
 
-    found, corners = res
+def get_image_cv2(pb_object, get_first):
 
-    if found:
-        term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_COUNT, 30, 0.1)
-        cv2.cornerSubPix(img, corners, (searchwin_size, searchwin_size), (-1, -1), term)
+    im_bytes = pb_object.image1.bytes if get_first else pb_object.image2.bytes
 
-    return res
+    buff_np = np.fromstring(im_bytes, dtype='uint8')
+    return cv2.imdecode(buff_np, flags=cv2.IMREAD_GRAYSCALE)
 
-def cbc_opencv_to_numpy(success, cbc_res):
-
-    if success:
-        return cbc_res.reshape(-1, 2)
-    else:
-        return None
-
-class CGFindCorners(CompGraph):
-
-    def __init__(self):
-        func_dict = {
-            'get_image_from_pb': get_image_from_pb,
-            'open_image': open_image_from_bytes,
-            'find_corners': find_cbc,
-            'reformat_corners': cbc_opencv_to_numpy,
-        }
-
-        func_io = {
-            'get_image_from_pb': ('pb_object', 'image_bytes'),
-            'open_image': ('image_bytes', 'image'),
-            'find_corners': (('image', 'pattern_size_wh'), ('success', 'corners_opencv')),
-            'reformat_corners': (('success', 'corners_opencv'), 'corners_np')
-        }
-
-        super(CGFindCorners, self).__init__(func_dict, func_io)
 
 def dispatch_event(e):
 
@@ -78,10 +49,12 @@ def dispatch_event(e):
 
 def prepare_output(pipe):
 
-    arr = pipe['corners_np']
+    #print(pipe.traverse_time())
+
+    pose = np.array([1, 1, 1])
 
     pb_out = JustBytes()
-    pb_out.contents = pickle.dumps(arr)
+    pb_out.contents = pickle.dumps(pose)
 
     pb_imagepair = pipe['pb_object']
 
@@ -92,6 +65,7 @@ def prepare_output(pipe):
     add_attribute(pb_out, 'time_visionpipe_reacted', pipe.loop.counter.timestamp_event_arrival)
 
     return pb_out.SerializeToString()
+
 
 default_sub_address = 'ipc:///tmp/psloop-stereopair'
 default_pub_address = 'ipc:///tmp/psloop-vision-response'
@@ -105,9 +79,22 @@ if __name__ == '__main__':
 
     subscriber = ZeroMQSubscriber(sub_address, q_in)
 
-    cg = CGFindCorners()
-    pipe = FullPipeline('FindCorners', cg, q_in, q_out, dispatch_event, prepare_output)
-    pipe['pattern_size_wh'] = (9, 6)
+    CHOSEN_METHOD = 'orb'
+
+    cg_match = create_feature_matching_cg(CHOSEN_METHOD)
+
+    add_func_dict = {'get_image_1': partial(get_image_cv2, get_first=True), 'get_image_2': partial(get_image_cv2, get_first=False)}
+    add_func_io = {'get_image_1': ('pb_object', 'image_1'), 'get_image_2': ('pb_object', 'image_2')}
+
+    cg_match = add_new_vertices(cg_match, add_func_dict, add_func_io)
+
+    ft = {p: None for p in METHOD_PARAMS[CHOSEN_METHOD]}
+    ft['mask_1'] = None
+    ft['mask_2'] = None
+    ft['normType'] = cv2.NORM_HAMMING
+    ft['crossCheck'] = True
+
+    pipe = FullPipeline('StereoMatcher', cg_match, q_in, q_out, dispatch_event, prepare_output, frozen_tokens=ft)
 
     publisher = ZeroMQPublisher(pub_address, q_out)
 

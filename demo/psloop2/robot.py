@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     WAIT_BETWEEN_REQUESTS = 0.1
 
-    N_REQUESTS = 50
+    N_REQUESTS = 500
 
     all_attr_dicts = []
 

@@ -80,6 +80,13 @@ def graph_union_with_suffixing(cg1, cg2, suff_1='_1', suff_2='_2', exclude=None)
     return CompGraph(new_func_dict, new_func_io)
 
 
+def graph_union(cg1, cg2):
+
+    new_func_dict = merge_dicts(cg1.functions, cg2.functions)
+    new_func_io = merge_dicts(cg1.func_io, cg2.func_io)
+
+    return CompGraph(new_func_dict, new_func_io)
+
 def create_nodes_from_comp_graph(cg):
 
     nodes = dict()

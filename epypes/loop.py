@@ -58,7 +58,11 @@ class EventLoop(Thread):
                 break
 
             try:
+
+                self._callback_pipeline.attributes['time_dispatch_0'] = time.time()
                 input_kvargs = self._event_dispatcher(event)
+                self._callback_pipeline.attributes['time_dispatch_1'] = time.time()
+
                 self._counter.on_processing_start()
                 self._callback_pipeline.run(**input_kvargs)
                 self._counter.on_processing_end()

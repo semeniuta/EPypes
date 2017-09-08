@@ -8,6 +8,7 @@ from epypes.node import Node
 from epypes.loop import EventLoop
 from epypes.compgraph import CompGraph, CompGraphRunner
 
+import time
 
 def attach(pipeline, nd, tokens_as_input, names_of_outputs, new_name):
 
@@ -27,8 +28,11 @@ def attach(pipeline, nd, tokens_as_input, names_of_outputs, new_name):
 class Pipeline(Node):
 
     def __init__(self, name, comp_graph, frozen_tokens=None):
+
         self._cg = comp_graph.to_cg_with_nodes()
         self._runner = CompGraphRunner(self._cg, frozen_tokens)
+
+        self._attributes = dict()
 
         def master_function(**kvargs):
             self._runner.run(**kvargs)
@@ -61,6 +65,10 @@ class Pipeline(Node):
     def stop(self):
         for node in self._cg.nodes.values():
             node.stop()
+
+    @property
+    def attributes(self):
+        return self._attributes
 
     @property
     def cgraph(self):
@@ -122,6 +130,7 @@ class FullPipeline(Pipeline):
         self.__call__(**kvargs)
 
         e_out = self._out_prep_func(self)
+
         self._qout.put(e_out)
 
     def listen(self):

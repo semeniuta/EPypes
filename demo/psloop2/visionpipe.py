@@ -5,8 +5,6 @@ sys.path.append(os.path.join(os.getcwd(), 'epypes/protobuf'))
 
 import numpy as np
 import cv2
-from PIL import Image
-from io import BytesIO
 import pickle
 import time
 from functools import partial
@@ -22,23 +20,12 @@ from epypes.cli import parse_pubsub_args
 
 from rpa.features import create_feature_matching_cg, METHOD_PARAMS
 
-def open_image_from_bytes(image_bytes):
-
-    buff = BytesIO(image_bytes)
-    return np.array(Image.open(buff))
-
-def get_image_pair_from_pb(pb_object):
-
-    image_bytes = (pb_object.image1.bytes, pb_object.image2.bytes)
-    return tuple(open_image_from_bytes(im_b) for im_b in image_bytes)
-
 def get_image_cv2(pb_object, get_first):
 
     im_bytes = pb_object.image1.bytes if get_first else pb_object.image2.bytes
 
     buff_np = np.fromstring(im_bytes, dtype='uint8')
     return cv2.imdecode(buff_np, flags=cv2.IMREAD_GRAYSCALE)
-
 
 def dispatch_event(e):
 
@@ -49,7 +36,7 @@ def dispatch_event(e):
 
 def prepare_output(pipe):
 
-    #print(pipe.traverse_time())
+    t0 = time.time()
 
     pose = np.array([1, 1, 1])
 
@@ -61,8 +48,13 @@ def prepare_output(pipe):
     copy_downstream_attributes(pb_imagepair, pb_out)
     add_attribute(pb_out, 'vision_processing_time', pipe.time)
     add_attribute(pb_out, 'epypes_overhead', pipe.compute_overhead())
-    add_attribute(pb_out, 'time_visionpipe_pub', time.time())
     add_attribute(pb_out, 'time_visionpipe_reacted', pipe.loop.counter.timestamp_event_arrival)
+    add_attribute(pb_out, 'time_out_prep_start', t0)
+
+    for k, v in pipe.attributes.items():
+        add_attribute(pb_out, k, v)
+
+    add_attribute(pb_out, 'time_visionpipe_pub', time.time())
 
     return pb_out.SerializeToString()
 
@@ -83,7 +75,10 @@ if __name__ == '__main__':
 
     cg_match = create_feature_matching_cg(CHOSEN_METHOD)
 
-    add_func_dict = {'get_image_1': partial(get_image_cv2, get_first=True), 'get_image_2': partial(get_image_cv2, get_first=False)}
+    get_im_1 = partial(get_image_cv2, get_first=True)
+    get_im_2 = partial(get_image_cv2, get_first=False)
+
+    add_func_dict = {'get_image_1': get_im_1, 'get_image_2': get_im_2}
     add_func_io = {'get_image_1': ('pb_object', 'image_1'), 'get_image_2': ('pb_object', 'image_2')}
 
     cg_match = add_new_vertices(cg_match, add_func_dict, add_func_io)

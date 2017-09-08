@@ -17,8 +17,8 @@ from epypes.cli import parse_pubsub_args
 default_sub_address = 'ipc:///tmp/psloop-vision-request'
 default_pub_address = 'ipc:///tmp/psloop-stereopair'
 
-images1_mask = '../DATA/IMG/stereo/vintage/im0.png'
-images2_mask = '../DATA/IMG/stereo/vintage/im1.png'
+images1_mask = '../DATA/IMG/stereo/robotmac/left_im*.png'
+images2_mask = '../DATA/IMG/stereo/robotmac/right_im*.png'
 
 images1 = [open(fname, 'rb').read() for fname in glob(images1_mask)]
 images2 = [open(fname, 'rb').read() for fname in glob(images2_mask)]
@@ -71,8 +71,3 @@ if __name__ == '__main__':
     loop.start()
     print('Starting subscriber at', sub_address)
     subscriber.start()
-
-
-
-
-

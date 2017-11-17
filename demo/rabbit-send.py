@@ -7,7 +7,7 @@
 #
 # channel.basic_publish(exchange='', routing_key='hello', body='Hello World!')
 
-from epypes.patterns.rabbit import RabbitMQPutQueue
+from epypes.rabbitmq import RabbitMQPutQueue
 
 q = RabbitMQPutQueue(host='localhost', exchange='', routing_key='hello')
 

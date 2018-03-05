@@ -133,7 +133,7 @@ class CompGraph(object):
         for fname in func_io:
 
             if fname not in func_dict:
-                raise Exception('{} is not in set of functions')
+                raise Exception('{} is not in the set of functions'.format(fname))
             f_in, f_out = func_io[fname]
 
             if type(f_in) is tuple:
@@ -383,10 +383,3 @@ class CompGraphRunner(object):
     @property
     def token_manager(self):
         return self._tm
-
-
-
-
-
-
-

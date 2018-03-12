@@ -8,3 +8,10 @@ else:
     import queue as py3_queue
     Queue = py3_queue.Queue
 
+
+def create_queue_putter(func, q_out):
+
+    def f(event):
+        q_out.put(func(event))
+
+    return f

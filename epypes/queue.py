@@ -11,7 +11,8 @@ else:
 
 def create_queue_putter(func, q_out):
 
-    def f(event):
-        q_out.put(func(event))
+    def closure(event):
+        res = func(event)
+        q_out.put(res)
 
-    return f
+    return closure

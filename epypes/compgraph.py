@@ -1,6 +1,7 @@
 from epypes.node import Node
 from epypes.graph import BipartiteDigraph, DepthFirstOrder
 
+
 def rename_in_dict(d, old_key, new_key):
 
     d[new_key] = d[old_key]
@@ -13,6 +14,7 @@ def common_func_names_exist(cg1, cg2):
     if set(keys1).intersection(keys2) == set():
         return False
     return True
+
 
 def add_suffix_to_dict_values(d, key, suffix, exclude_suffixing=None):
 
@@ -27,6 +29,7 @@ def add_suffix_to_dict_values(d, key, suffix, exclude_suffixing=None):
         return tuple(rename(el) for el in obj)
 
     return tuple(rename(el) for el in d[key])
+
 
 def merge_dicts(d1, d2, suffix_1=None, suffix_2=None, rename_values=False, exclude_value_suffixing=None):
 
@@ -87,6 +90,7 @@ def graph_union(cg1, cg2):
 
     return CompGraph(new_func_dict, new_func_io)
 
+
 def create_nodes_from_comp_graph(cg):
 
     nodes = dict()
@@ -95,8 +99,10 @@ def create_nodes_from_comp_graph(cg):
 
     return nodes
 
-class UnderfinedSourceTokensException(Exception):
+
+class UndefinedSourceTokensException(Exception):
     pass
+
 
 class FunctionPlaceholder(object):
 
@@ -235,6 +241,7 @@ class CompGraph(object):
         cg_with_nodes = NodeBasedCompGraph(func_dict=nodes, func_io=self._func_io)
         return cg_with_nodes
 
+
 class NodeBasedCompGraph(CompGraph):
 
     def swap(self, node_name, new_node):
@@ -243,6 +250,7 @@ class NodeBasedCompGraph(CompGraph):
     @property
     def nodes(self):
         return self.functions
+
 
 class TokenManager(object):
 
@@ -281,7 +289,6 @@ class TokenManager(object):
         return self._values[token_name]
 
     def to_networkx(self, func_v_attr={}, free_token_v_attr={}, frozen_token_v_attr={}, edge_attr={}):
-
 
         default_frozen_token_v_attr = {
             'style': 'filled',
@@ -339,7 +346,7 @@ class CompGraphRunner(object):
 
         kvargs_set = set(kvargs.keys())
         if not self._tm.free_source_tokens.issubset(kvargs_set):
-            raise UnderfinedSourceTokensException()
+            raise UndefinedSourceTokensException()
 
         for v in self._torder:
 

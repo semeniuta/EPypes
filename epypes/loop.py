@@ -4,7 +4,7 @@ from threading import Thread
 import traceback
 import time
 
-from epypes.compgraph import UnderfinedSourceTokensException
+from epypes.compgraph import UndefinedSourceTokensException
 
 class CommonEventLoop(Thread):
 
@@ -68,7 +68,7 @@ class EventLoop(Thread):
                 self._counter.on_processing_end()
                 #print(self._counter.summary)
 
-            except UnderfinedSourceTokensException:
+            except UndefinedSourceTokensException:
                 pname = self._callback_pipeline.name
                 msg = 'Event supplied to {} does not correspond to the required source tokens'.format(pname)
                 print(msg)

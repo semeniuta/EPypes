@@ -20,7 +20,7 @@ def dispatch_images(images):
 
 class ReactiveVisionSystem(object):
 
-    def __init__(subscriber, grabber, pipeline, publisher):
+    def __init__(self, subscriber, grabber, pipeline, publisher):
 
         self._subscriber = subscriber
         self._grabber = grabber
@@ -28,7 +28,7 @@ class ReactiveVisionSystem(object):
         self._publisher = publisher
 
 
-    def start(verbose=False):
+    def start(self, verbose=False):
 
         if verbose:
             print('Starting', self._publisher)
@@ -47,20 +47,20 @@ class ReactiveVisionSystem(object):
         self._subscriber.start()
 
 
-    def stop(verbose=False):
+    def stop(self, verbose=False):
 
         if verbose:
             print('Stopping', self._subscriber)
-        self._subscriber.start()
+        self._subscriber.stop()
 
         if verbose:
             print('Stopping', self._grabber)
-        self._grabber.start(show_video=False)
+        self._grabber.stop()
 
         if verbose:
             print('Stopping', self._pipeline)
-        self._pipeline.listen()
+        self._pipeline.stop()
 
         if verbose:
             print('Stopping', self._publisher)
-        self._publisher.start()
+        self._publisher.stop()

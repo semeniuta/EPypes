@@ -78,6 +78,10 @@ class Pipeline(Node):
         return None
 
     @property
+    def attributes(self):
+        return self._attributes
+
+    @property
     def cgraph(self):
         return self._cg
 

@@ -6,6 +6,7 @@ import time
 
 from epypes.compgraph import UndefinedSourceTokensException
 
+
 class CommonEventLoop(Thread):
 
     def __init__(self, q, callback_func):
@@ -33,6 +34,7 @@ class CommonEventLoop(Thread):
 
     def stop(self):
         self._q.put('STOP_REQUEST')
+
 
 class EventLoop(Thread):
 

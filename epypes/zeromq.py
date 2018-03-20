@@ -14,6 +14,7 @@ class ZeroMQSubscriber(Thread):
 
         self._q = q
 
+        self._addr = server_address
         self._stop_flag = False
 
         super(ZeroMQSubscriber, self).__init__(target=self._listen)
@@ -34,6 +35,12 @@ class ZeroMQSubscriber(Thread):
 
         self._stop_flag = True
 
+    def __repr__(self):
+
+        class_name = self.__class__.__name__
+        return '{0}[{1}]'.format(class_name, self._addr)
+
+
 class ZeroMQPublisher(CommonEventLoop):
 
     def __init__(self, server_address, q):
@@ -41,6 +48,8 @@ class ZeroMQPublisher(CommonEventLoop):
         self._context = zmq.Context()
         self._socket = self._context.socket(zmq.PUB)
         self._socket.bind(server_address)
+
+        self._addr = server_address
 
         super(ZeroMQPublisher, self).__init__(q, callback_func=self._send)
 
@@ -51,20 +60,8 @@ class ZeroMQPublisher(CommonEventLoop):
         else:
             self._socket.send(data)
 
+    def __repr__(self):
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        class_name = self.__class__.__name__
+        return '{0}[{1}]'.format(class_name, self._addr)
 

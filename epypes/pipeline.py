@@ -10,6 +10,7 @@ from epypes.compgraph import CompGraph, CompGraphRunner
 
 import time
 
+
 def attach(pipeline, nd, tokens_as_input, names_of_outputs, new_name):
 
     func_dict = dict(pipeline.cgraph.functions)
@@ -66,9 +67,15 @@ class Pipeline(Node):
         for node in self._cg.nodes.values():
             node.stop()
 
-    @property
-    def attributes(self):
-        return self._attributes
+    def set_attr(self, k, v):
+        self._attributes[k] = v
+
+    def get_attr(self, k):
+
+        if k in self._attributes:
+            return self._attributes[k]
+
+        return None
 
     @property
     def cgraph(self):
@@ -77,6 +84,7 @@ class Pipeline(Node):
     @property
     def runner(self):
         return self._runner
+
 
 class SourcePipeline(Pipeline):
 
@@ -92,6 +100,7 @@ class SourcePipeline(Pipeline):
 
         e_out = self._out_prep_func(self)
         self._qout.put(e_out)
+
 
 class SinkPipeline(Pipeline):
 
@@ -113,6 +122,7 @@ class SinkPipeline(Pipeline):
     @property
     def loop(self):
         return self._loop
+
 
 class FullPipeline(Pipeline):
 

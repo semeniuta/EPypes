@@ -28,8 +28,6 @@ for i in range(10):
     print('Sent: ', msg)
 
 publisher.stop()
-print('Stopped', publisher)
-
 
 
 

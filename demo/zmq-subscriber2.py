@@ -32,8 +32,6 @@ time.sleep(10)
 
 subscriber.stop()
 qhandler.stop()
-print('Stopped {} and {}'.format(subscriber, qhandler))
-
 
 
 

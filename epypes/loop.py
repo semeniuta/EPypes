@@ -5,6 +5,7 @@ import traceback
 import time
 
 from epypes.compgraph import UndefinedSourceTokensException
+from epypes.util import generate_short_uuid
 
 
 class CommonEventLoop(Thread):
@@ -13,8 +14,9 @@ class CommonEventLoop(Thread):
 
         self._q = q
         self._callback_func = callback_func
+        self._stop_const = generate_short_uuid()
 
-        Thread.__init__(self, target=self._eventloop)
+        super(CommonEventLoop, self).__init__(target=self._eventloop)
 
     def _eventloop(self):
 
@@ -22,7 +24,7 @@ class CommonEventLoop(Thread):
 
             event = self._q.get()
 
-            if event == 'STOP_REQUEST':
+            if event == self._stop_const:
                 print('Stopping {}'.format(self))
                 break
 
@@ -33,7 +35,7 @@ class CommonEventLoop(Thread):
                 traceback.print_exc()
 
     def stop(self):
-        self._q.put('STOP_REQUEST')
+        self._q.put(self._stop_const)
 
 
 class EventLoop(Thread):

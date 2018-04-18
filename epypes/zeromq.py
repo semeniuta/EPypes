@@ -21,15 +21,20 @@ class ZeroMQSubscriber(Thread):
 
     def _listen(self):
 
+        poller = zmq.Poller()
+        poller.register(self._socket)
+
         while True:
 
-            try:
-                msg = self._socket.recv(flags=zmq.NOBLOCK)
+            p_socks = dict(poller.poll(timeout=0))
+
+            if self._socket in p_socks:
+                msg = self._socket.recv()
                 self._q.put(msg)
-            except zmq.error.Again:
-                if self._stop_flag is True:
-                    print('Stopping {}'.format(self))
-                    break
+
+            if self._stop_flag is True:
+                print('Stopping {}'.format(self))
+                break
 
     def stop(self):
 

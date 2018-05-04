@@ -346,7 +346,11 @@ class CompGraphRunner(object):
 
         kvargs_set = set(kvargs.keys())
         if not self._tm.free_source_tokens.issubset(kvargs_set):
-            raise UndefinedSourceTokensException()
+
+            missing_tokens = self._tm.free_source_tokens - kvargs_set
+            msg = 'Missing source tokens: {}'.format(missing_tokens)
+
+            raise UndefinedSourceTokensException(msg)
 
         for v in self._torder:
 

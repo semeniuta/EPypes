@@ -13,9 +13,11 @@ def create_queues():
 def dispatch_images(images):
 
     n = len(images)
-    im_dict = {'image_{:d}'.format(i+1) : images[i] for i in range(n)}
 
-    return im_dict
+    if n == 1:
+        return {'image': images[0]}
+
+    return {'image_{:d}'.format(i+1) : images[i] for i in range(n)}
 
 
 class ReactiveVisionSystem(object):

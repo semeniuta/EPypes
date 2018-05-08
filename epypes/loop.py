@@ -45,6 +45,7 @@ class EventLoop(Thread):
         self._q = q
         self._callback_pipeline = callback_pipeline
         self._event_dispatcher = event_dispatcher
+        self._stop_const = generate_short_uuid()
 
         self._counter = TimeCounter(q)
 
@@ -57,7 +58,7 @@ class EventLoop(Thread):
             event = self._q.get()
             self._counter.on_event_arrival()
 
-            if event == 'STOP_REQUEST':
+            if event == self._stop_const:
                 print('Stopping {}'.format(self))
                 break
 
@@ -81,7 +82,7 @@ class EventLoop(Thread):
                 traceback.print_exc()
 
     def stop(self):
-        self._q.put('STOP_REQUEST')
+        self._q.put(self._stop_const)
 
     @property
     def counter(self):
@@ -111,10 +112,10 @@ class TimeCounter(object):
         self._qsize = self._q.qsize()
 
     def on_processing_start(self):
-        self._t_process_start = time.time()
+        self._t_process_start = time.perf_counter()
 
     def on_processing_end(self):
-        self._t_process_end = time.time()
+        self._t_process_end = time.perf_counter()
         self._summary = self._prepare_summary()
 
     def _prepare_summary(self):

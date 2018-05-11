@@ -64,9 +64,9 @@ class EventLoop(Thread):
 
             try:
 
-                self._callback_pipeline.attributes['time_dispatch_0'] = time.time()
+                self._callback_pipeline.attributes['time_dispatch_0'] = time.perf_counter()
                 input_kvargs = self._event_dispatcher(event)
-                self._callback_pipeline.attributes['time_dispatch_1'] = time.time()
+                self._callback_pipeline.attributes['time_dispatch_1'] = time.perf_counter()
 
                 self._counter.on_processing_start()
                 self._callback_pipeline.run(**input_kvargs)
@@ -106,7 +106,7 @@ class TimeCounter(object):
         self._summary = None
 
     def on_event_arrival(self):
-        t = time.time()
+        t = time.perf_counter()
         self._t_prev_event = self._t_event
         self._t_event = t
         self._qsize = self._q.qsize()

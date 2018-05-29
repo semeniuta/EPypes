@@ -100,6 +100,18 @@ def create_nodes_from_comp_graph(cg):
     return nodes
 
 
+def get_networkx_graph(obj, style_attrs=None):
+
+    nxg = obj.to_networkx()
+
+    if style_attrs is not None:
+        for node_name in nxg.nodes_iter():
+            for k, v in style_attrs.items():
+                nxg.node[node_name][k] = v
+
+    return nxg
+
+
 class UndefinedSourceTokensException(Exception):
     pass
 
@@ -382,6 +394,9 @@ class CompGraphRunner(object):
 
     def __getitem__(self, token_name):
         return self.token_value(token_name)
+
+    def to_networkx(self):
+        return self._tm.to_networkx()
 
     @property
     def frozen_tokens(self):

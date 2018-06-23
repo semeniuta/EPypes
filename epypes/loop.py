@@ -65,11 +65,11 @@ class EventLoop(Thread):
             try:
 
                 self._callback_pipeline.attributes['time_dispatch_0'] = time.perf_counter()
-                input_kvargs = self._event_dispatcher(event)
+                input_kwargs = self._event_dispatcher(event)
                 self._callback_pipeline.attributes['time_dispatch_1'] = time.perf_counter()
 
                 self._counter.on_processing_start()
-                self._callback_pipeline.run(**input_kvargs)
+                self._callback_pipeline.run(**input_kwargs)
                 self._counter.on_processing_end()
                 #print(self._counter.summary)
 

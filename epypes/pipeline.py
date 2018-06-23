@@ -35,19 +35,19 @@ class Pipeline(Node):
 
         self._attributes = dict()
 
-        def master_function(**kvargs):
-            self._runner.run(**kvargs)
+        def master_function(**kwargs):
+            self._runner.run(**kwargs)
 
         super(Pipeline, self).__init__(name, master_function)
 
-    def run(self, **kvargs):
-        self.__call__(**kvargs)
+    def run(self, **kwargs):
+        self.__call__(**kwargs)
 
     def modify_frozen_token(self, token_name, new_value):
         self._runner.freeze_token(token_name, new_value)
 
     def traverse_time(self):
-        return (self.name, self.time, tuple(nd.traverse_time() for nd in self._cg.nodes.values()))
+        return self.name, self.time, tuple(nd.traverse_time() for nd in self._cg.nodes.values())
 
     def compute_overhead(self):
         _, time_total, tt_nodes = self.traverse_time()
@@ -98,9 +98,9 @@ class SourcePipeline(Pipeline):
         self._out_prep_func = out_prep_func
         super(SourcePipeline, self).__init__(name, comp_graph, frozen_tokens)
 
-    def run(self, **kvargs):
+    def run(self, **kwargs):
 
-        self.__call__(**kvargs)
+        self.__call__(**kwargs)
 
         e_out = self._out_prep_func(self)
         self._qout.put(e_out)
@@ -139,9 +139,9 @@ class FullPipeline(Pipeline):
         self._loop = EventLoop(q_in, self, event_dispatcher)
         super(FullPipeline, self).__init__(name, comp_graph, frozen_tokens)
 
-    def run(self, **kvargs):
+    def run(self, **kwargs):
 
-        self.__call__(**kvargs)
+        self.__call__(**kwargs)
 
         e_out = self._out_prep_func(self)
 

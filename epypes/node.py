@@ -12,15 +12,15 @@ class Node(GenericObject):
         self._run_count = 0
         self._time = 0
 
-    def __call__(self, *args, **kvargs):
+    def __call__(self, *args, **kwargs):
         '''
         NodeBasedCompGraph calls a node using exclusively *args (positional arguments)
-        **kvargs are used by Pipeline.run (Pipeline is a subclass of Node)
+        **kwargs are used by Pipeline.run (Pipeline is a subclass of Node)
         for forwarding keys/values of free source tokens
         '''
 
         t0 = time.time()
-        res = self._func(*args, **kvargs)
+        res = self._func(*args, **kwargs)
         t1 = time.time()
         self._time = t1 - t0
         self._run_count += 1

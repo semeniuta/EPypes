@@ -60,10 +60,10 @@ def merge_dicts(d1, d2, suffix_1=None, suffix_2=None, rename_values=False, exclu
 
 
 def add_new_vertices(cg, add_func_dict, add_func_io):
-
-    #for func_name in set(add_func_dict.keys()).union(set(add_func_io.keys())):
-    #    if func_name in cg.functions:
-    #        raise Exception('Function {} already exists'.format(func_name))
+    """
+    Extend computational graph cg with additional subgraph,
+    defined with add_func_dict, add_func_io.
+    """
 
     new_func_dict = cg.functions.copy()
     new_func_io = cg.func_io.copy()
@@ -123,6 +123,9 @@ class FunctionPlaceholder(object):
 
 
 class CompGraph(object):
+    """
+    Computational graph
+    """
 
     def __init__(self, func_dict, func_io):
 
@@ -175,6 +178,7 @@ class CompGraph(object):
         return self._outputs[func_name]
 
     def rename_function(self, old_name, new_name):
+        # deprecated
 
         if old_name not in self._functions:
             raise Exception('No function with name {} exists'.format(old_name))
@@ -184,6 +188,7 @@ class CompGraph(object):
             rename_in_dict(self._func_io, old_name, new_name)
 
     def swap_function(self, key, new_func):
+        # deprecated
 
         if not key in self._functions:
             raise Exception('No function with the given key exists')
@@ -247,16 +252,18 @@ class CompGraph(object):
             self._snk_tokens = set(res)
             return self._snk_tokens
 
-
     def to_cg_with_nodes(self):
+
         nodes = create_nodes_from_comp_graph(self)
         cg_with_nodes = NodeBasedCompGraph(func_dict=nodes, func_io=self._func_io)
+
         return cg_with_nodes
 
 
 class NodeBasedCompGraph(CompGraph):
 
     def swap(self, node_name, new_node):
+        # deprecated
         self._functions[node_name] = new_node
 
     @property
@@ -354,20 +361,20 @@ class CompGraphRunner(object):
             for tk, tk_val in frozen_tokens.items():
                 self._tm.freeze_token(tk, tk_val)
 
-    def run(self, **kvargs):
+    def run(self, **kwargs):
 
-        kvargs_set = set(kvargs.keys())
-        if not self._tm.free_source_tokens.issubset(kvargs_set):
+        kwargs_set = set(kwargs.keys())
+        if not self._tm.free_source_tokens.issubset(kwargs_set):
 
-            missing_tokens = self._tm.free_source_tokens - kvargs_set
+            missing_tokens = self._tm.free_source_tokens - kwargs_set
             msg = 'Missing source tokens: {}'.format(missing_tokens)
 
             raise UndefinedSourceTokensException(msg)
 
         for v in self._torder:
 
-            if v in kvargs:
-                self._tm.save_payload_value(v, kvargs[v])
+            if v in kwargs:
+                self._tm.save_payload_value(v, kwargs[v])
 
             elif v in self._cg.functions:
 

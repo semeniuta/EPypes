@@ -1,10 +1,12 @@
 import networkx as nx
 
+
 def create_set_of_vertices(vertices):
     V = set()
     for v in vertices:
         V.add(v)
     return V
+
 
 class Digraph(object):
 
@@ -64,9 +66,15 @@ class Digraph(object):
                 res.append(v0)
         return res
 
-    def to_networkx(self, vert_attr={}, edge_attr={}):
+    def to_networkx(self, vert_attr=None, edge_attr=None):
         # Attributes from:
         # http://www.graphviz.org/doc/info/attrs.html
+
+        if vert_attr is None:
+            vert_attr = dict()
+
+        if edge_attr is None:
+            edge_attr = dict()
 
         nxg = nx.DiGraph()
 
@@ -96,6 +104,7 @@ class Digraph(object):
         if v not in self._V:
             raise Exception('{} is not a part of the set of vertices'.format(v))
 
+
 class BipartiteDigraph(Digraph):
 
     def __init__(self, vertices1, vertices2, edges=None):
@@ -113,7 +122,16 @@ class BipartiteDigraph(Digraph):
 
         Digraph.add_edge(self, a, b)
 
-    def to_networkx(self, vert1_attr={}, vert2_attr={}, edge_attr={}):
+    def to_networkx(self, vert1_attr=None, vert2_attr=None, edge_attr=None):
+
+        if vert1_attr is None:
+            vert1_attr = dict()
+
+        if vert2_attr is None:
+            vert2_attr = dict()
+
+        if edge_attr is None:
+            edge_attr = dict()
 
         nxg = nx.DiGraph()
 
@@ -168,6 +186,7 @@ class DepthFirstSearch(object):
     def on_exit(self, v):
         pass
 
+
 class DirectedCycle(DepthFirstSearch):
 
     def __init__(self, graph):
@@ -214,6 +233,7 @@ class DirectedCycle(DepthFirstSearch):
 
     def on_exit(self, v):
         self._on_stack[v] = False
+
 
 class DepthFirstOrder(DepthFirstSearch):
 

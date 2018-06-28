@@ -9,8 +9,10 @@ def rename_in_dict(d, old_key, new_key):
 
 
 def common_func_names_exist(cg1, cg2):
+
     keys1 = cg1.func_io.keys()
     keys2 = cg2.func_io.keys()
+
     if set(keys1).intersection(keys2) == set():
         return False
     return True
@@ -195,7 +197,16 @@ class CompGraph(object):
 
         self._functions[key] = new_func
 
-    def to_networkx(self, func_v_attr={}, token_v_attr={}, edge_attr={}):
+    def to_networkx(self, func_v_attr=None, token_v_attr=None, edge_attr=None):
+
+        if func_v_attr is None:
+            func_v_attr = dict()
+
+        if token_v_attr is None:
+            token_v_attr = dict()
+
+        if edge_attr is None:
+            edge_attr = dict()
 
         default_func_v_attr = {'shape': 'rect'}
         for k in default_func_v_attr.keys():
@@ -311,7 +322,19 @@ class TokenManager(object):
     def token_value(self, token_name): # deprecated
         return self[token_name]
 
-    def to_networkx(self, func_v_attr={}, free_token_v_attr={}, frozen_token_v_attr={}, edge_attr={}):
+    def to_networkx(self, func_v_attr=None, free_token_v_attr=None, frozen_token_v_attr=None, edge_attr=None):
+
+        if func_v_attr is None:
+            func_v_attr = dict()
+
+        if free_token_v_attr is None:
+            free_token_v_attr = dict()
+
+        if frozen_token_v_attr is None:
+            frozen_token_v_attr = dict()
+
+        if edge_attr is None:
+            edge_attr = dict()
 
         default_frozen_token_v_attr = {
             'style': 'filled',

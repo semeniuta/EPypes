@@ -105,7 +105,7 @@ def get_networkx_graph(obj, style_attrs=None):
     nxg = obj.to_networkx()
 
     if style_attrs is not None:
-        for node_name in nxg.nodes_iter():
+        for node_name in nxg.nodes():
             for k, v in style_attrs.items():
                 nxg.node[node_name][k] = v
 
@@ -352,8 +352,12 @@ class TokenManager(object):
 class CompGraphRunner(object):
 
     def __init__(self, cg, frozen_tokens=None):
+
         self._cg = cg
+
         self._torder = DepthFirstOrder(self._cg.graph).topological_order
+        self._torder_functions = list(filter(lambda x: x in self._cg.functions, self._torder))
+
         self._tm = TokenManager(self._cg)
 
         self._frozen_tokens = frozen_tokens
@@ -371,25 +375,22 @@ class CompGraphRunner(object):
 
             raise UndefinedSourceTokensException(msg)
 
-        for v in self._torder:
+        for token_name, value in kwargs.items():
+            self._tm.save_payload_value(token_name, value)
 
-            if v in kwargs:
-                self._tm.save_payload_value(v, kwargs[v])
+        for func_name in self._torder_functions:
 
-            elif v in self._cg.functions:
+            f = self._cg.functions[func_name]
+            f_args = (self._tm.token_value(token_name) for token_name in self._cg.func_inputs(func_name))
+            f_out = f(*f_args)
 
-                f = self._cg.functions[v]
-                f_args = (self._tm.token_value(token_name) for token_name in self._cg.func_inputs(v))
-                f_out = f(*f_args)
-
-                v_adj = self._cg.graph.adj(v)
-                if len(v_adj) == 1:
-                    payload_token_name = v_adj[0]
-                    self._tm.save_payload_value(payload_token_name, f_out)
-                elif len(v_adj) > 1:
-                    for i, tk in enumerate(v_adj):
-                        self._tm.save_payload_value(tk, f_out[i])
-
+            v_adj = self._cg.graph.adj(func_name)
+            if len(v_adj) == 1:
+                payload_token_name = v_adj[0]
+                self._tm.save_payload_value(payload_token_name, f_out)
+            elif len(v_adj) > 1:
+                for i, tk in enumerate(v_adj):
+                    self._tm.save_payload_value(tk, f_out[i])
             else:
                 pass
 

@@ -301,11 +301,15 @@ class TokenManager(object):
 
         self._values[token_name] = token_value
 
-    def token_value(self, token_name):
+    def __getitem__(self, token_name):
+
         if token_name not in self._cg.tokens:
             raise Exception('{} is not a valid token name'.format(token_name))
 
         return self._values[token_name]
+
+    def token_value(self, token_name): # deprecated
+        return self[token_name]
 
     def to_networkx(self, func_v_attr={}, free_token_v_attr={}, frozen_token_v_attr={}, edge_attr={}):
 
@@ -381,7 +385,7 @@ class CompGraphRunner(object):
         for func_name in self._torder_functions:
 
             f = self._cg.functions[func_name]
-            f_args = (self._tm.token_value(token_name) for token_name in self._cg.func_inputs(func_name))
+            f_args = (self._tm[token_name] for token_name in self._cg.func_inputs(func_name))
             f_out = f(*f_args)
 
             v_adj = self._cg.graph.adj(func_name)
@@ -397,11 +401,11 @@ class CompGraphRunner(object):
     def freeze_token(self, token_name, token_value):
         self._tm.freeze_token(token_name, token_value)
 
-    def token_value(self, token_name):
-        return self._tm.token_value(token_name)
-
     def __getitem__(self, token_name):
-        return self.token_value(token_name)
+        return self._tm[token_name]
+
+    def token_value(self, token_name): # deprecated
+        return self[token_name]
 
     def to_networkx(self):
         return self._tm.to_networkx()

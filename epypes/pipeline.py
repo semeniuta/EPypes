@@ -54,11 +54,11 @@ class Pipeline(Node):
         time_nodes = (t for _, t in tt_nodes)
         return time_total - sum(time_nodes)
 
-    def token_value(self, token_name):
-        return self._runner.token_value(token_name)
-
     def __getitem__(self, token_name):
-        return self.token_value(token_name)
+        return self._runner[token_name]
+
+    def token_value(self, token_name): # deprecated
+        return self[token_name]
 
     def __setitem__(self, token_name, frozen_value):
         self.modify_frozen_token(token_name, frozen_value)

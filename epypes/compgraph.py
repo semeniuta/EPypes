@@ -115,7 +115,13 @@ def get_networkx_graph(obj, style_attrs=None):
 
 
 class UndefinedSourceTokensException(Exception):
-    pass
+
+    def __init__(self, missing_source_tokens):
+
+        self.missing_source_tokens = missing_source_tokens
+
+        msg = 'Missing source tokens: {}'.format(missing_source_tokens)
+        super(UndefinedSourceTokensException, self).__init__(msg)
 
 
 class FunctionPlaceholder(object):
@@ -395,12 +401,10 @@ class CompGraphRunner(object):
     def run(self, **kwargs):
 
         kwargs_set = set(kwargs.keys())
+
         if not self._tm.free_source_tokens.issubset(kwargs_set):
-
             missing_tokens = self._tm.free_source_tokens - kwargs_set
-            msg = 'Missing source tokens: {}'.format(missing_tokens)
-
-            raise UndefinedSourceTokensException(msg)
+            raise UndefinedSourceTokensException(missing_tokens)
 
         for token_name, value in kwargs.items():
             self._tm.save_payload_value(token_name, value)

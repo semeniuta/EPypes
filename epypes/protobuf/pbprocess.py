@@ -39,6 +39,3 @@ def get_attributes_dict(attr_entries):
         attr_dict[entry.key] = val
 
     return attr_dict
-
-
-

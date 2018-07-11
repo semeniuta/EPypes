@@ -1,9 +1,7 @@
 """
-The first demo script with a simple pair
-of a SourcePipeline and a SinkPipeline
+Test compisition of a SourcePipeline with a SinkPipeline
+havign a common queue
 """
-
-from __future__ import print_function
 
 from epypes.queue import Queue
 from epypes.compgraph import CompGraph
@@ -29,7 +27,7 @@ def dispatch_greet(e):
     return {'input_string': e}
 
 
-if __name__ == '__main__':
+def test_pipelines_composition_with_q(capfd):
 
     greet_cg = CompGraph(
 
@@ -62,4 +60,7 @@ if __name__ == '__main__':
 
     greet_pipe.stop()
     print_pipe.stop()
+
+    out, err = capfd.readouterr()
+    assert out.split('\n')[0] == "HELLO ALEX!"
 

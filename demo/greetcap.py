@@ -1,9 +1,14 @@
+"""
+The first demo script with a simple pair
+of a SourcePipeline and a SinkPipeline
+"""
+
 from __future__ import print_function
 
-import multiprocessing as mp
-
+from epypes.queue import Queue
 from epypes.compgraph import CompGraph
 from epypes.pipeline import Pipeline, SourcePipeline, SinkPipeline
+
 
 def say_hello(to_whom, exclamation=False):
     s = 'Hello ' + to_whom
@@ -11,11 +16,18 @@ def say_hello(to_whom, exclamation=False):
         s += '!'
     return s
 
+
 def capitalize(s):
     return s.upper()
 
-def dispatch_greet(event_str):
-    return {'input_string': event_str['capitalized_string']}
+
+def greet_out(pipe):
+    return pipe['capitalized_string']
+
+
+def dispatch_greet(e):
+    return {'input_string': e}
+
 
 if __name__ == '__main__':
 
@@ -37,15 +49,16 @@ if __name__ == '__main__':
         func_io={'print': ('input_string', None)}
     )
 
-    q = mp.Queue()
+    q = Queue()
 
-    greet_pipe = SourcePipeline('Greeter', greet_cg, q_out=q, frozen_tokens={'exclamation': True})
+    ft = {'exclamation': True}
+    greet_pipe = SourcePipeline('Greeter', greet_cg, q_out=q, out_prep_func=greet_out, frozen_tokens=ft)
 
     print_pipe = SinkPipeline('Printer', print_cg, q_in=q, event_dispatcher=dispatch_greet)
 
     print_pipe.listen()
 
-    greet_pipe.run(name='Alex', tokens_to_get=('capitalized_string',))
+    greet_pipe.run(name='Alex')
 
     greet_pipe.stop()
     print_pipe.stop()

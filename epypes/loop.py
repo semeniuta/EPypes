@@ -54,6 +54,7 @@ class EventLoop(Thread):
         while True:
 
             event = self._q.get()
+            self._record_timestamp('time_react')
 
             if event == self._stop_const:
                 print('Stopping {}'.format(self))
@@ -61,9 +62,10 @@ class EventLoop(Thread):
 
             try:
 
-                self._callback_pipeline.attributes['time_dispatch_0'] = time.perf_counter()
+                self._record_timestamp('time_dispatch_0')
                 input_kwargs = self._event_dispatcher(event)
-                self._callback_pipeline.attributes['time_dispatch_1'] = time.perf_counter()
+                self._record_timestamp('time_dispatch_1')
+
                 self._callback_pipeline.run(**input_kwargs)
 
             except UndefinedSourceTokensException:
@@ -76,3 +78,6 @@ class EventLoop(Thread):
 
     def stop(self):
         self._q.put(self._stop_const)
+
+    def _record_timestamp(self, key):
+        self._callback_pipeline.attributes[key] = time.perf_counter()

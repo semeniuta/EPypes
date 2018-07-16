@@ -1,3 +1,10 @@
+"""
+Test CompGraph construction.
+
+python test_compgraph.py # using unittest
+py.test test_compgraph.py
+"""
+
 import unittest
 from epypes import compgraph
 
@@ -44,8 +51,3 @@ class TestCompGraph(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
-

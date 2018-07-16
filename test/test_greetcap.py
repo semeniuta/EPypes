@@ -1,6 +1,8 @@
 """
-Test compisition of a SourcePipeline with a SinkPipeline
-havign a common queue
+Test composition of a SourcePipeline with a SinkPipeline
+having a common queue.
+
+py.test test_greetcap.py
 """
 
 from epypes.queue import Queue
@@ -63,4 +65,3 @@ def test_pipelines_composition_with_q(capfd):
 
     out, err = capfd.readouterr()
     assert out.split('\n')[0] == "HELLO ALEX!"
-

@@ -4,3 +4,8 @@
 *.idea/*
 *.DS_Store
 *.cache
+Pipfile
+Pipfile.lock
+*.egg-info/*
+.eggs*
+

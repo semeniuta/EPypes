@@ -47,7 +47,26 @@ class EventLoop(Thread):
         self._event_dispatcher = event_dispatcher
         self._stop_const = generate_short_uuid()
 
+        def default_exception_hander(e, pipe):
+
+            terminal_str = '''An exception occurred when invoking {0}: {1}
+            Exception type: {2}
+            '''.format(pipe, e, type(e))
+
+            print(terminal_str)
+            traceback.print_exc()
+
+        self._on_exception = default_exception_hander
+
         Thread.__init__(self, target=self._eventloop)
+
+    def set_exception_handler(self, handler):
+        """
+        handler has to be a callable with the signature:
+        (exception, pipeline)
+        """
+
+        self._on_exception = handler
 
     def _eventloop(self):
 
@@ -72,9 +91,8 @@ class EventLoop(Thread):
                 pname = self._callback_pipeline.name
                 msg = 'Event supplied to {} does not correspond to the required source tokens'.format(pname)
                 print(msg)
-            except Exception:
-                print('An exception occurred when invoking {}. Exception details:'.format(self._callback_pipeline))
-                traceback.print_exc()
+            except Exception as e:
+                self._on_exception(e, self._callback_pipeline)
 
     def stop(self):
         self._q.put(self._stop_const)

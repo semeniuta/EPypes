@@ -35,10 +35,7 @@ class Pipeline(Node):
 
         self._attributes = dict()
 
-        def master_function(**kwargs):
-            self._runner.run(**kwargs)
-
-        super(Pipeline, self).__init__(name, master_function)
+        super(Pipeline, self).__init__(name, func=self._runner.run)
 
     def run(self, **kwargs):
         self.__call__(**kwargs)

@@ -58,7 +58,7 @@ class EventLoop(Thread):
 
         self._on_exception = default_exception_hander
 
-        Thread.__init__(self, target=self._eventloop)
+        super(EventLoop, self).__init__(target=self._eventloop)
 
     def set_exception_handler(self, handler):
         """

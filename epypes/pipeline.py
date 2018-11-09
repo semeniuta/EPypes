@@ -87,23 +87,6 @@ class Pipeline(Node):
         return self._runner
 
 
-class SourcePipeline(Pipeline):
-
-    def __init__(self, name, comp_graph, q_out, out_prep_func, frozen_tokens=None):
-
-        self._qout = q_out
-        self._out_prep_func = out_prep_func
-        super(SourcePipeline, self).__init__(name, comp_graph, frozen_tokens)
-
-    def run(self, **kwargs):
-
-        self.__call__(**kwargs)
-
-        e_out = self._out_prep_func(self)
-
-        self._qout.put(e_out)
-
-
 class SinkPipeline(Pipeline):
 
     def __init__(self, name, comp_graph, q_in, event_dispatcher, frozen_tokens=None):
@@ -124,6 +107,23 @@ class SinkPipeline(Pipeline):
     @property
     def loop(self):
         return self._loop
+
+
+class SourcePipeline(Pipeline):
+
+    def __init__(self, name, comp_graph, q_out, out_prep_func, frozen_tokens=None):
+
+        self._qout = q_out
+        self._out_prep_func = out_prep_func
+        super(SourcePipeline, self).__init__(name, comp_graph, frozen_tokens)
+
+    def run(self, **kwargs):
+
+        self.__call__(**kwargs)
+
+        e_out = self._out_prep_func(self)
+
+        self._qout.put(e_out)
 
 
 class FullPipeline(SourcePipeline):

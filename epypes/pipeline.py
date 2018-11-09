@@ -1,14 +1,12 @@
-'''
+"""
 Implementation of pipeline classes and related functions
-'''
+"""
 
 from __future__ import print_function
 
 from epypes.node import Node
 from epypes.loop import EventLoop
 from epypes.compgraph import CompGraph, CompGraphRunner
-
-import time
 
 
 def attach(pipeline, nd, tokens_as_input, names_of_outputs, new_name):
@@ -141,7 +139,7 @@ class FullPipeline(SourcePipeline):
     def stop(self):
         self._loop.stop()
         self._loop.join()
-        Pipeline.stop(self)
+        self.stop()
 
     @property
     def loop(self):

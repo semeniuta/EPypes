@@ -100,7 +100,7 @@ class SinkPipeline(Pipeline):
     def stop(self):
         self._loop.stop()
         self._loop.join()
-        Pipeline.stop(self)
+        self.stop()
 
     @property
     def loop(self):

@@ -100,7 +100,7 @@ class SinkPipeline(Pipeline):
     def stop(self):
         self._loop.stop()
         self._loop.join()
-        self.stop()
+        Pipeline.stop(self)
 
     @property
     def loop(self):
@@ -139,7 +139,7 @@ class FullPipeline(SourcePipeline):
     def stop(self):
         self._loop.stop()
         self._loop.join()
-        self.stop()
+        Pipeline.stop(self)
 
     @property
     def loop(self):

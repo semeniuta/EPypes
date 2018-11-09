@@ -100,6 +100,7 @@ class SourcePipeline(Pipeline):
         self.__call__(**kwargs)
 
         e_out = self._out_prep_func(self)
+
         self._qout.put(e_out)
 
 
@@ -125,24 +126,14 @@ class SinkPipeline(Pipeline):
         return self._loop
 
 
-class FullPipeline(Pipeline):
+class FullPipeline(SourcePipeline):
 
     def __init__(self, name, comp_graph, q_in, q_out, event_dispatcher, out_prep_func, frozen_tokens=None):
 
         self._qin = q_in
-        self._qout = q_out
-        self._out_prep_func = out_prep_func
-
         self._loop = EventLoop(q_in, self, event_dispatcher)
-        super(FullPipeline, self).__init__(name, comp_graph, frozen_tokens)
 
-    def run(self, **kwargs):
-
-        self.__call__(**kwargs)
-
-        e_out = self._out_prep_func(self)
-
-        self._qout.put(e_out)
+        super(FullPipeline, self).__init__(name, comp_graph, q_out, out_prep_func, frozen_tokens)
 
     def listen(self):
         self._loop.start()

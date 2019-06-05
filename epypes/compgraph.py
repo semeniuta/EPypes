@@ -185,24 +185,6 @@ class CompGraph(object):
     def func_outputs(self, func_name):
         return self._outputs[func_name]
 
-    def rename_function(self, old_name, new_name):
-        # deprecated
-
-        if old_name not in self._functions:
-            raise Exception('No function with name {} exists'.format(old_name))
-
-        if old_name != new_name:
-            rename_in_dict(self._functions, old_name, new_name)
-            rename_in_dict(self._func_io, old_name, new_name)
-
-    def swap_function(self, key, new_func):
-        # deprecated
-
-        if not key in self._functions:
-            raise Exception('No function with the given key exists')
-
-        self._functions[key] = new_func
-
     def to_networkx(self, func_v_attr=None, token_v_attr=None, edge_attr=None):
 
         if func_v_attr is None:
@@ -278,10 +260,6 @@ class CompGraph(object):
 
 
 class NodeBasedCompGraph(CompGraph):
-
-    def swap(self, node_name, new_node):
-        # deprecated
-        self._functions[node_name] = new_node
 
     @property
     def nodes(self):

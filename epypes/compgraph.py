@@ -1,5 +1,6 @@
 from epypes.node import Node
 from epypes.graph import BipartiteDigraph, DepthFirstOrder
+import copy
 
 
 def rename_in_dict(d, old_key, new_key):
@@ -305,6 +306,20 @@ class TokenManager(object):
 
     def token_value(self, token_name): # deprecated
         return self[token_name]
+
+    def get_values(self, names=None, deepcopy=False):
+
+        def cp(values):
+            if deepcopy:
+                return copy.deepcopy(values)
+            return values.copy()
+
+        if names is None: # copy values of all tokens
+            return cp(self._values)
+
+        values = {name: self._values[name] for name in names}
+        return cp(values)
+
 
     def to_networkx(self, func_v_attr=None, free_token_v_attr=None, frozen_token_v_attr=None, edge_attr=None):
 

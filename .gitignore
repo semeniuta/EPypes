@@ -8,4 +8,5 @@ Pipfile
 Pipfile.lock
 *.egg-info/*
 .eggs*
-
+build
+dist

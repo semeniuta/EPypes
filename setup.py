@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 with open('requirements.txt') as req_f:
     requirements = req_f.readlines()
@@ -11,7 +11,7 @@ setup(
     author_email='oleksandr.semeniuta@gmail.com',
     name='epypes',
     version='0.1.1',
-    packages=find_packages(include=['epypes']),
+    packages=['epypes'],
     license='BSD license',
     long_description=readme,
     install_requires=requirements,

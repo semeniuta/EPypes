@@ -14,6 +14,7 @@ setup(
     packages=['epypes'],
     license='BSD license',
     long_description=readme,
+    long_description_content_type="text/markdown",
     install_requires=requirements,
     test_suite='test',
     tests_require=['pytest'],

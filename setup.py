@@ -10,7 +10,7 @@ setup(
     author="Oleksandr Semeniuta",
     author_email='oleksandr.semeniuta@gmail.com',
     name='epypes',
-    version='0.1.dev0',
+    version='0.1.1',
     packages=find_packages(include=['epypes']),
     license='BSD license',
     long_description=readme,

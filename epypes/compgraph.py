@@ -110,7 +110,7 @@ def get_networkx_graph(obj, style_attrs=None):
     if style_attrs is not None:
         for node_name in nxg.nodes():
             for k, v in style_attrs.items():
-                nxg.node[node_name][k] = v
+                nxg.nodes[node_name][k] = v
 
     return nxg
 
@@ -206,7 +206,7 @@ class CompGraph(object):
 
         for fname, fobj in self.functions.items():
             if isinstance(fobj, FunctionPlaceholder):
-                nxg.node[fname]['style'] = 'dashed'
+                nxg.nodes[fname]['style'] = 'dashed'
 
         return nxg
 
@@ -347,12 +347,12 @@ class TokenManager(object):
         nxg = self._cg.to_networkx(func_v_attr=func_v_attr, edge_attr=edge_attr)
 
         for frozen_token_v in self.frozen:
-            this_node = nxg.node[frozen_token_v]
+            this_node = nxg.nodes[frozen_token_v]
             for k, v in frozen_token_v_attr.items():
                 this_node[k] = v
 
         for free_token_v in self.free:
-            this_node = nxg.node[free_token_v]
+            this_node = nxg.nodes[free_token_v]
             for k, v in free_token_v_attr.items():
                 this_node[k] = v
 
